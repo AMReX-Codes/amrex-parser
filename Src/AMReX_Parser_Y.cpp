@@ -1,9 +1,12 @@
-#include <AMReX.H>
-#include <AMReX_Parser_Y.H>
-#include <amrex_parser.tab.h>
+#include "AMReX_IOFormat.H"
+#include "AMReX_Parser_Y.H"
+#include "amrex_parser.tab.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstdarg>
+#include <iostream>
+#include <stdexcept>
 #include <string>
 
 void
@@ -157,7 +160,7 @@ amrex_parser_new ()
     my_parser->ast = parser_ast_dup(my_parser, parser_root, 1); /* 1: free the source parser_root */
 
     if ((char*)my_parser->p_root + my_parser->sz_mempool != (char*)my_parser->p_free) {
-        amrex::Abort("amrex_parser_new: error in memory size");
+        throw std::runtime_error("amrex_parser_new: error in memory size");
     }
 
     parser_ast_optimize(my_parser->ast);
@@ -250,7 +253,7 @@ parser_ast_size (struct parser_node* node)
             + parser_ast_size(((struct parser_assign*)node)->v);
         break;
     default:
-        amrex::Abort("parser_ast_size: unknown node type " + std::to_string(node->type));
+        throw std::runtime_error("parser_ast_size: unknown node type " + std::to_string(node->type));
     }
 
     return result;
@@ -322,7 +325,7 @@ parser_ast_dup (struct amrex_parser* my_parser, struct parser_node* node, int mo
                                                  ((struct parser_assign*)node)->v, move);
         break;
     default:
-        amrex::Abort("parser_ast_dup: unknown node type " + std::to_string(node->type));
+        throw std::runtime_error("parser_ast_dup: unknown node type " + std::to_string(node->type));
     }
     if (move) {
         /* Note that we only do this on the original AST.  We do not
@@ -340,7 +343,7 @@ parser_ast_dup (struct amrex_parser* my_parser, struct parser_node* node, int mo
 namespace {
     char* parser_get_name (struct parser_node* node)
     {
-        AMREX_ASSERT(node->type == PARSER_SYMBOL);
+        assert(node->type == PARSER_SYMBOL);
         return ((struct parser_symbol*)node)->name;
     }
 
@@ -669,7 +672,7 @@ bool parser_node_equal (struct parser_node* a, struct parser_node* b)
     case PARSER_ASSIGN:
         return false;
     default:
-        amrex::Abort("parser_node_equal: unknown node type " + std::to_string(a->type));
+        throw std::runtime_error("parser_node_equal: unknown node type " + std::to_string(a->type));
         return false;
     }
 }
@@ -1330,10 +1333,10 @@ parser_ast_optimize (struct parser_node* node)
         parser_ast_optimize(node->r);
         break;
     case PARSER_SUB:
-        amrex::Abort("parser_ast_optimize: should not have PARSER_SUB");
+        throw std::runtime_error("parser_ast_optimize: should not have PARSER_SUB");
         break;
     default:
-        amrex::Abort("parser_ast_optimize: unknown node type " +
+        throw std::runtime_error("parser_ast_optimize: unknown node type " +
                      std::to_string(node->type));
     }
 }
@@ -1405,7 +1408,7 @@ parser_ast_print (struct parser_node* node, std::string const& space, std::ostre
         parser_ast_print(((struct parser_assign*)node)->v, more_space, printer);
         break;
     default:
-        amrex::Abort("parser_ast_print: unknown node type " + std::to_string(node->type));
+        throw std::runtime_error("parser_ast_print: unknown node type " + std::to_string(node->type));
     }
 }
 
@@ -1448,7 +1451,7 @@ parser_ast_depth (struct parser_node* node)
         return d+1;
     }
     default:
-        amrex::Abort("parser_ast_depth: unknown node type " + std::to_string(node->type));
+        throw std::runtime_error("parser_ast_depth: unknown node type " + std::to_string(node->type));
         return 0;
     }
 }
@@ -1492,7 +1495,7 @@ void parser_ast_sort (struct parser_node* node)
         parser_ast_sort(((struct parser_assign*)node)->v);
         break;
     default:
-        amrex::Abort("parser_ast_sort: unknown node type " + std::to_string(node->type));
+        throw std::runtime_error("parser_ast_sort: unknown node type " + std::to_string(node->type));
     }
 }
 
@@ -1532,7 +1535,7 @@ parser_ast_regvar (struct parser_node* node, char const* name, int i)
         parser_ast_regvar(((struct parser_assign*)node)->v, name, i);
         break;
     default:
-        amrex::Abort("parser_ast_regvar: unknown node type "+std::to_string(node->type));
+        throw std::runtime_error("parser_ast_regvar: unknown node type "+std::to_string(node->type));
     }
 }
 
@@ -1572,7 +1575,7 @@ void parser_ast_setconst (struct parser_node* node, char const* name, double c)
         parser_ast_setconst(((struct parser_assign*)node)->v, name, c);
         break;
     default:
-        amrex::Abort("parser_ast_setconst: unknown node type " + std::to_string(node->type));
+        throw std::runtime_error("parser_ast_setconst: unknown node type " + std::to_string(node->type));
     }
 }
 
@@ -1611,7 +1614,7 @@ void parser_ast_get_symbols (struct parser_node* node, std::set<std::string>& sy
         parser_ast_get_symbols(((struct parser_assign*)node)->v, symbols, local_symbols);
         break;
     default:
-        amrex::Abort("parser_ast_get_symbols: unknown node type " + std::to_string(node->type));
+        throw std::runtime_error("parser_ast_get_symbols: unknown node type " + std::to_string(node->type));
     }
 }
 
@@ -1632,10 +1635,9 @@ parser_setconst (struct amrex_parser* parser, char const* name, double c)
 void
 parser_print (struct amrex_parser* parser)
 {
-    auto& printer = amrex::OutStream();
-    auto oldprec = printer.precision(17);
+    auto& printer = std::cout;
+    IOFormatSaver iofmtsaver(printer);
     parser_ast_print(parser->ast, std::string("  "), printer);
-    printer.precision(oldprec);
 }
 
 std::set<std::string>
@@ -1658,7 +1660,7 @@ parser_depth (struct amrex_parser* parser)
 
 double parser_get_number (struct parser_node* node)
 {
-    AMREX_ASSERT(node->type == PARSER_NUMBER);
+    assert(node->type == PARSER_NUMBER);
     return ((struct parser_number*)node)->value;
 }
 

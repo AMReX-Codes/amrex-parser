@@ -11,4 +11,4 @@
 #pragma clang diagnostic ignored "-Wsign-compare"
 #endif
 
-#include <amrex_parser.lex.nolint.H>
+#include "amrex_parser.lex.nolint.H"

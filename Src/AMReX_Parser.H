@@ -1,16 +1,18 @@
 #ifndef AMREX_PARSER_H_
 #define AMREX_PARSER_H_
 
-#include <AMReX_Arena.H>
-#include <AMReX_Array.H>
-#include <AMReX_GpuDevice.H>
-#include <AMReX_Parser_Exe.H>
-#include <AMReX_REAL.H>
-#include <AMReX_Vector.H>
+#include "AMReX_Arena.H"
+#include "AMReX_Gpu.H"
+#include "AMReX_Parser_Exe.H"
+#include "AMReX_REAL.H"
+#include "AMReX_TypeTraits.H"
 
+#include <cassert>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <set>
+#include <vector>
 
 namespace amrex {
 
@@ -30,9 +32,9 @@ struct ParserExecutor
     std::enable_if_t<sizeof...(Ts) == N && !amrex::Same<float,Ts...>::value, double>
     operator() (Ts... var) const noexcept
     {
-        amrex::GpuArray<double,N> l_var{var...};
-        AMREX_IF_ON_DEVICE((return parser_exe_eval(m_device_executor, l_var.data());))
-        AMREX_IF_ON_HOST((return parser_exe_eval(m_host_executor, l_var.data());))
+        double l_var[] = {var...};
+        AMREX_IF_ON_DEVICE((return parser_exe_eval(m_device_executor, l_var);))
+        AMREX_IF_ON_HOST((return parser_exe_eval(m_host_executor, l_var);))
     }
 
     template <typename... Ts>
@@ -40,16 +42,16 @@ struct ParserExecutor
     std::enable_if_t<sizeof...(Ts) == N &&  amrex::Same<float,Ts...>::value, float>
     operator() (Ts... var) const noexcept
     {
-        amrex::GpuArray<double,N> l_var{var...};
-        AMREX_IF_ON_DEVICE((return static_cast<float>(parser_exe_eval(m_device_executor, l_var.data()));))
-        AMREX_IF_ON_HOST((return static_cast<float>(parser_exe_eval(m_host_executor, l_var.data()));))
+        double l_var[] = {var...};
+        AMREX_IF_ON_DEVICE((return static_cast<float>(parser_exe_eval(m_device_executor, l_var));))
+        AMREX_IF_ON_HOST((return static_cast<float>(parser_exe_eval(m_host_executor, l_var));))
     }
 
     [[nodiscard]] AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
-    double operator() (GpuArray<double,N> const& var) const noexcept
+    double operator() (double var[N]) const noexcept
     {
-        AMREX_IF_ON_DEVICE((return parser_exe_eval(m_device_executor, var.data());))
-        AMREX_IF_ON_HOST((return parser_exe_eval(m_host_executor, var.data());))
+        AMREX_IF_ON_DEVICE((return parser_exe_eval(m_device_executor, var);))
+        AMREX_IF_ON_HOST((return parser_exe_eval(m_host_executor, var);))
     }
 
     AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
@@ -75,7 +77,7 @@ public:
 
     void setConstant (std::string const& name, double c);
 
-    void registerVariables (Vector<std::string> const& vars);
+    void registerVariables (std::vector<std::string> const& vars);
 
     void print () const;
     void printExe () const;
@@ -105,7 +107,7 @@ private:
 #endif
         mutable int m_max_stack_size = 0;
         mutable int m_exe_size = 0;
-        mutable Vector<char const*> m_locals;
+        mutable std::vector<char const*> m_locals;
         Data () = default;
         ~Data ();
         Data (Data const&) = delete;
@@ -115,7 +117,7 @@ private:
     };
 
     std::shared_ptr<Data> m_data;
-    Vector<std::string> m_vars;
+    std::vector<std::string> m_vars;
 };
 
 template <int N>
@@ -123,7 +125,7 @@ ParserExecutor<N>
 Parser::compileHost () const
 {
     if (m_data && m_data->m_parser) {
-        AMREX_ASSERT(N == m_data->m_nvars);
+        assert(N == m_data->m_nvars);
 
         if (!(m_data->m_host_executor)) {
             int stack_size;
@@ -132,16 +134,16 @@ Parser::compileHost () const
                                  stack_size));
 
             if (m_data->m_max_stack_size > AMREX_PARSER_STACK_SIZE) {
-                amrex::Abort("amrex::Parser: AMREX_PARSER_STACK_SIZE, "
+                throw std::runtime_error("amrex::Parser: AMREX_PARSER_STACK_SIZE, "
                              + std::to_string(AMREX_PARSER_STACK_SIZE) + ", is too small for "
                              + m_data->m_expression);
             }
             if (stack_size != 0) {
-                amrex::Abort("amrex::Parser: something went wrong with parser stack! "
+                throw std::runtime_error("amrex::Parser: something went wrong with parser stack! "
                              + std::to_string(stack_size));
             }
 
-            m_data->m_host_executor = (char*)The_Pinned_Arena()->alloc(m_data->m_exe_size);
+            m_data->m_host_executor = (char*)amrex::allocate_host(m_data->m_exe_size);
 
             try {
                 m_data->m_locals = parser_compile(m_data->m_parser,
@@ -170,10 +172,8 @@ Parser::compile () const
 
 #ifdef AMREX_USE_GPU
     if (m_data && m_data->m_parser && !(m_data->m_device_executor)) {
-        m_data->m_device_executor = (char*)The_Arena()->alloc(m_data->m_exe_size);
-        Gpu::htod_memcpy_async(m_data->m_device_executor, m_data->m_host_executor,
-                               m_data->m_exe_size);
-        Gpu::streamSynchronize();
+        m_data->m_device_executor = (char*)amrex::allocate_device(m_data->m_exe_size);
+        Gpu::htod_memcpy(m_data->m_device_executor, m_data->m_host_executor, m_data->m_exe_size);
         exe.m_device_executor = m_data->m_device_executor;
     }
 #endif

@@ -1,0 +1,505 @@
+
+ifneq (,$(findstring ~,$(AMREX_HOME)))
+  $(warning *** AMREX_HOME string contains ~ and make will not like it. So it is replaced.)
+  AMREX_HOME := $(shell echo $(AMREX_HOME))
+endif
+
+ifneq ($(MAKECMDGOALS),)
+ifeq ($(MAKECMDGOALS),$(filter $(MAKECMDGOALS),realclean clean cleanconfig uninstall distclean))
+  NO_CONFIG_CHECKING = TRUE
+endif
+endif
+
+ifneq ("$(wildcard $(AMREX_HOME)/Tools/GNUMake/Make.local-pre)","")
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/Make.local-pre...)
+  include        $(AMREX_HOME)/Tools/GNUMake/Make.local-pre
+endif
+
+ifdef USE_GPU
+  USE_GPU := $(strip $(USE_GPU))
+else
+  USE_GPU := FALSE
+endif
+
+ifdef USE_SYCL
+  USE_SYCL := $(strip $(USE_SYCL))
+else
+  USE_SYCL := FALSE
+endif
+
+ifeq ($(USE_SYCL),TRUE)
+  override COMP = sycl
+  DEFINES += -DAMREX_USE_SYCL
+  SYCL_SUB_GROUP_SIZE ?= 32
+  DEFINES += -DAMREX_SYCL_SUB_GROUP_SIZE=$(SYCL_SUB_GROUP_SIZE)
+  USE_GPU := TRUE
+  USE_CUDA := FALSE
+  USE_HIP := FALSE
+  # disable ccache for now
+  USE_CCACHE := FALSE
+endif
+
+ifdef USE_HIP
+  USE_HIP := $(strip $(USE_HIP))
+else
+  USE_HIP := FALSE
+endif
+
+ifeq ($(USE_HIP),TRUE)
+  USE_CUDA := FALSE
+  override COMP = hip
+endif
+
+ifdef USE_CUDA
+  USE_CUDA := $(strip $(USE_CUDA))
+else
+  USE_CUDA := FALSE
+endif
+
+ifdef PRECISION
+  PRECISION := $(strip $(PRECISION))
+else
+  PRECISION := DOUBLE
+endif
+
+ifdef USE_RPATH
+  USE_RPATH := $(strip $(USE_RPATH))
+else
+  # the syntax we use below works for all compilers but CCE "classic"
+  # we plan to enable this feature by default in the future
+  USE_RPATH := FALSE
+endif
+
+ifdef DEBUG
+  DEBUG := $(strip $(DEBUG))
+else
+  DEBUG := FALSE
+endif
+
+ifeq ($(USE_CUDA),TRUE)
+  # Set the default CUDA architecture version.
+  CUDA_ARCH ?= 70
+
+  # Link-time optimization
+  CUDA_LTO ?= FALSE
+
+  # Enable verbosity in the CUDA compilation.
+  CUDA_VERBOSE ?= TRUE
+endif
+
+ifdef EBASE
+  EBASE := $(strip $(EBASE))
+else
+  EBASE := main
+endif
+
+ifdef USE_FORCE_INLINE
+  USE_FORCE_INLINE := $(strip $(USE_FORCE_INLINE))
+else
+  USE_FORCE_INLINE := FALSE
+endif
+
+ifdef USE_FLATTEN_FOR
+  USE_FLATTEN_FOR := $(strip $(USE_FLATTEN_FOR))
+else
+  USE_FLATTEN_FOR := FALSE
+endif
+
+ifdef WARN_ALL
+  WARN_ALL := $(strip $(WARN_ALL))
+else
+ifeq ($(DEBUG),TRUE)
+  WARN_ALL := TRUE
+else
+  WARN_ALL := FALSE
+endif
+endif
+
+ifdef WARN_ERROR
+  WARN_ERROR := $(strip $(WARN_ERROR))
+else
+  WARN_ERROR := FALSE
+endif
+
+ifdef FIX_NVCC_PTHREAD
+  FIX_NVCC_PTHREAD := $(strip $(FIX_NVCC_PTHREAD))
+else
+  FIX_NVCC_PTHREAD := FALSE
+endif
+
+ifdef GPU_WARN_CAPTURE_THIS
+  GPU_WARN_CAPTURE_THIS := $(strip $(GPU_WARN_CAPTURE_THIS))
+else
+  GPU_WARN_CAPTURE_THIS := TRUE
+endif
+
+ifdef GPU_ERROR_CAPTURE_THIS
+  GPU_ERROR_CAPTURE_THIS := $(strip $(GPU_ERROR_CAPTURE_THIS))
+else
+  GPU_ERROR_CAPTURE_THIS := TRUE
+endif
+
+ifdef GPU_ERROR_CROSS_EXECUTION_SPACE_CALL
+  GPU_ERROR_CROSS_EXECUTION_SPACE_CALL := $(strip $(GPU_ERROR_CROSS_EXECUTION_SPACE_CALL))
+else
+  GPU_ERROR_CROSS_EXECUTION_SPACE_CALL := TRUE
+endif
+
+ifdef USE_GPU_RDC
+  USE_GPU_RDC := $(strip $(USE_GPU_RDC))
+else
+  USE_GPU_RDC := TRUE
+endif
+
+ALLOW_DIFFERENT_COMP ?= TRUE
+SKIP_LINKING ?= FALSE
+USE_COMPILE_PIC ?= FALSE
+
+MKCONFIG        = $(AMREX_HOME)/Tools/libamrex/mkconfig.py
+MKPKGCONFIG     = $(AMREX_HOME)/Tools/libamrex/mkpkgconfig.py
+
+USE_LEGACY_DEPFLAGS = FALSE
+DEPFLAGS = -MMD -MP
+LEGACY_DEPFLAGS = -MM
+
+RANLIB          = ranlib
+
+EXE_OUTPUT_OPTION      = -o $(objEXETempDir)/$*.o
+
+ifeq ($(USE_HIP),TRUE)
+  ifdef HIPCC_HOST_COMP
+    AMREX_CCOMP = $(HIP_HOST_COMP)
+  else
+    AMREX_CCOMP = gnu
+  endif
+else ifeq ($(USE_CUDA),TRUE)
+  ifdef NVCC_HOST_COMP
+    AMREX_CCOMP = $(NVCC_HOST_COMP)
+  else ifeq ($(COMP),cray)
+    AMREX_CCOMP = cray
+  else
+    AMREX_CCOMP = gnu
+  endif
+endif
+
+ifdef AMREX_CCOMP
+  lowercase_amrex_ccomp = $(shell echo $(AMREX_CCOMP) | tr A-Z a-z)
+  ifeq ($(lowercase_amrex_ccomp),$(filter $(lowercase_amrex_ccomp),gcc gnu g++))
+    AMREX_CCOMP = gnu
+  else ifeq ($(lowercase_amrex_ccomp),intel)
+    AMREX_CCOMP = intel
+  else ifeq ($(lowercase_amrex_ccomp),intel-llvm)
+    AMREX_CCOMP = intel-llvm
+  else ifeq ($(lowercase_amrex_ccomp),intel-classic)
+    AMREX_CCOMP = intel-classic
+  else ifeq ($(lowercase_amrex_ccomp),sycl)
+    AMREX_CCOMP = sycl
+  else ifeq ($(lowercase_amrex_ccomp),cray)
+    AMREX_CCOMP = cray
+  else ifeq ($(lowercase_amrex_ccomp),pgi)
+    AMREX_CCOMP = pgi
+  else ifeq ($(lowercase_amrex_ccomp),nvhpc)
+    AMREX_CCOMP = nvhpc
+  else ifeq ($(lowercase_amrex_ccomp),ibm)
+    AMREX_CCOMP = ibm
+  else ifeq ($(lowercase_amrex_ccomp),$(filter $(lowercase_amrex_ccomp),llvm clang clang++))
+    AMREX_CCOMP = clang
+  else ifeq ($(lowercase_amrex_ccomp),$(filter $(lowercase_amrex_ccomp),llvm-flang flang))
+    AMREX_CCOMP = clang
+  else ifeq ($(lowercase_amrex_ccomp),nag)
+    AMREX_CCOMP = gnu
+  else ifeq ($(lowercase_amrex_ccomp),nec)
+    AMREX_CCOMP = nec
+  else ifeq ($(lowercase_amrex_ccomp),armclang)
+    AMREX_CCOMP = armclang
+  else
+    $(error Unknown compiler $(AMREX_CCOMP). Supported compilers are gnu, intel, intel-llvm, intel-classic, sycl, cray, pgi, nvhpc, ibm, llvm, nag, nec, and armclang)
+  endif
+endif
+
+lowercase_comp = $(shell echo $(COMP) | tr A-Z a-z)
+
+ifeq ($(lowercase_comp),$(filter $(lowercase_comp),gcc gnu g++))
+  lowercase_comp = gnu
+  AMREX_FCOMP ?= gnu
+  AMREX_CCOMP ?= gnu
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/gnu.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/gnu.mak
+else ifeq ($(lowercase_comp),intel)
+  AMREX_FCOMP ?= intel
+  AMREX_CCOMP ?= intel
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/intel.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/intel.mak
+else ifeq ($(lowercase_comp),intel-llvm)
+  AMREX_FCOMP ?= intel-llvm
+  AMREX_CCOMP ?= intel-llvm
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/intel-llvm.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/intel-llvm.mak
+else ifeq ($(lowercase_comp),intel-classic)
+  AMREX_FCOMP ?= intel-classic
+  AMREX_CCOMP ?= intel-classic
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/intel-classic.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/intel-classic.mak
+else ifeq ($(lowercase_comp),sycl)
+  AMREX_FCOMP ?= none
+  AMREX_CCOMP ?= sycl
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/dpcpp.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/dpcpp.mak
+else ifeq ($(lowercase_comp),cray)
+  AMREX_FCOMP ?= cray
+  AMREX_CCOMP ?= cray
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/cray.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/cray.mak
+else ifeq ($(lowercase_comp),pgi)
+  AMREX_FCOMP ?= pgi
+  AMREX_CCOMP ?= pgi
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/pgi.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/pgi.mak
+else ifeq ($(lowercase_comp),nvhpc)
+  AMREX_FCOMP ?= nvhpc
+  AMREX_CCOMP ?= nvhpc
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/nvhpc.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/nvhpc.mak
+else ifeq ($(lowercase_comp),ibm)
+  AMREX_FCOMP ?= ibm
+  AMREX_CCOMP ?= ibm
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/ibm.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/ibm.mak
+else ifeq ($(lowercase_comp),$(filter $(lowercase_comp),llvm clang clang++))
+  lowercase_comp = llvm
+  AMREX_FCOMP ?= gnu
+  AMREX_CCOMP ?= clang
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/llvm.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/llvm.mak
+else ifeq ($(lowercase_comp),$(filter $(lowercase_comp),llvm-flang flang))
+  lowercase_comp = llvm-flang
+  AMREX_FCOMP ?= flang
+  AMREX_CCOMP ?= clang
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/llvm-flang.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/llvm-flang.mak
+else ifeq ($(lowercase_comp),nag)
+  AMREX_FCOMP ?= nag
+  AMREX_CCOMP ?= gnu
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/nag.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/nag.mak
+else ifeq ($(lowercase_comp),nec)
+  AMREX_FCOMP ?= nec
+  AMREX_CCOMP ?= nec
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/nec.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/nec.mak
+else ifeq ($(lowercase_comp),armclang)
+  AMREX_FCOMP ?= armflang
+  AMREX_CCOMP ?= armclang
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/armclang.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/armclang.mak
+else ifeq ($(lowercase_comp),hip)
+  AMREX_FCOMP ?= gnu
+  AMREX_CCOMP ?= hip
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/hip.mak...)
+  include        $(AMREX_HOME)/Tools/GNUMake/comps/hip.mak
+else
+  $(error Unknown compiler $(COMP). Supported compilers are gnu, intel, intel-llvm, intel-classic, sycl, cray, pgi, nvhpc, ibm, llvm, nag, and nec)
+endif
+
+CXXFLAGS += $(XTRA_CXXFLAGS)
+CFLAGS   += $(XTRA_CFLAGS)
+FFLAGS   += $(XTRA_FFLAGS)
+F90FLAGS += $(XTRA_F90FLAGS)
+CPPFLAGS += $(XTRA_CPPFLAGS)
+
+ifeq ($(DEBUG),TRUE)
+    CPPFLAGS	+= -DAMREX_DEBUG
+    DebugSuffix := .DEBUG
+else
+    DebugSuffix :=
+endif
+
+ifeq ($(USE_FORCE_INLINE),TRUE)
+    CPPFLAGS += -DAMREX_USE_FORCE_INLINE
+endif
+
+ifeq ($(USE_FLATTEN_FOR),TRUE)
+ifneq ($(DEBUG),TRUE)
+    CPPFLAGS += -DAMREX_USE_FLATTEN_FOR
+endif
+endif
+
+ifeq ($(USE_HIP),TRUE)
+
+    USE_GPU := TRUE
+
+    DEFINES += -DAMREX_USE_HIP
+
+    GPUSuffix := .HIP
+
+else ifeq ($(USE_CUDA),TRUE)
+
+    USE_GPU := TRUE
+
+    $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/nvcc.mak...)
+    include $(AMREX_HOME)/Tools/GNUMake/comps/nvcc.mak
+
+    DEFINES += -DAMREX_USE_CUDA
+
+    GPUSuffix := .CUDA
+
+else
+    GPUSuffix :=
+endif
+
+ifeq ($(USE_GPU),TRUE)
+    DEFINES += -DAMREX_USE_GPU
+    ifeq ($(GPU_ERROR_CHECK),FALSE)
+        DEFINES += -DAMREX_GPU_NO_ERROR_CHECK
+    endif
+    ifeq ($(USE_GPU_RDC),TRUE)
+        DEFINES += -DAMREX_USE_GPU_RDC
+    endif
+endif
+
+ifeq ($(PRECISION),FLOAT)
+    DEFINES += -DAMREX_USE_FLOAT
+    PrecisionSuffix := .$(PRECISION)
+else
+    PrecisionSuffix :=
+endif
+
+objStandalone	= $(CEXE_sources:%.cpp=%.o)
+
+objForExecs	= $(addprefix $(objEXETempDir)/, $(objStandalone))
+
+ifneq ($(DEBUG),TRUE)
+  DEFINES += -DNDEBUG
+endif
+
+CPPFLAGS	+= $(DEFINES)
+
+libraries	= $(XTRAOBJS) $(LIBRARIES) $(XTRALIBS)
+
+ifeq ($(USE_RPATH),TRUE)
+  ifeq ($(shell uname),Darwin)
+      # The mac loader, ld, does not like the "=" with rpath
+      LDFLAGS	+= -Xlinker -rpath '$(abspath .)' $(addprefix -Xlinker -rpath , $(abspath $(LIBRARY_LOCATIONS)))
+  else
+      LDFLAGS	+= -Xlinker -rpath='$(abspath .)' $(addprefix -Xlinker -rpath=, $(abspath $(LIBRARY_LOCATIONS)))
+  endif
+endif
+LDFLAGS	+= -L. $(addprefix -L, $(LIBRARY_LOCATIONS))
+
+machineSuffix	= $(lowercase_comp)$(PrecisionSuffix)$(DebugSuffix)$(GPUSuffix)$(USERSuffix)
+
+optionsSuffix	= .$(machineSuffix)
+
+executable	= $(addsuffix $(optionsSuffix).ex, $(EBASE))
+
+TMP_BUILD_DIR     ?= tmp_build_dir
+# backwards compatibility: alias the old name so codes don't break
+TmpBuildDir := $(TMP_BUILD_DIR)
+srcTempDir      = $(TMP_BUILD_DIR)/s/$(optionsSuffix).EXE
+depEXETempDir	= $(TMP_BUILD_DIR)/d/$(optionsSuffix).EXE
+objEXETempDir   = $(TMP_BUILD_DIR)/o/$(optionsSuffix).EXE
+tmpEXETempDir	= $(TMP_BUILD_DIR)/t/$(optionsSuffix).EXE
+
+includes	= -I$(srcTempDir) -I. $(addprefix -I, $(INCLUDE_LOCATIONS)) $(addprefix -isystem , $(SYSTEM_INCLUDE_LOCATIONS))
+
+amrexlib = $(objEXETempDir)/libamrex.a
+
+AMREX_INSTALL_DIR ?= $(TMP_BUILD_DIR)
+amrexLibDir = $(AMREX_INSTALL_DIR)/lib
+amrexIncludeDir = $(AMREX_INSTALL_DIR)/include
+amrexPkgconfigDir = $(AMREX_INSTALL_DIR)/lib/pkgconfig
+
+#
+# For source code manipulation
+#
+CSRCALL		= $(CEXE_sources) $(CEXE_headers)
+allSources	= $(CSRCALL)
+
+ifeq ($(USE_CCACHE),TRUE)
+  CCACHE = ccache
+else
+  CCACHE =
+endif
+
+ifeq ($(USE_CLANG_TIDY),TRUE)
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/tools/Make.clang-tidy)
+  include        $(AMREX_HOME)/Tools/GNUMake/tools/Make.clang-tidy
+endif
+
+ifneq ("$(wildcard $(AMREX_HOME)/Tools/GNUMake/Make.local)","")
+  $(info Loading $(AMREX_HOME)/Tools/GNUMake/Make.local...)
+  include        $(AMREX_HOME)/Tools/GNUMake/Make.local
+endif
+
+FINAL_LIBS = $(libraries)
+
+ifeq ($(USE_SYCL),TRUE)
+
+else ifeq ($(USE_HIP),TRUE)
+
+    LINKFLAGS = $(HIPCC_FLAGS)
+    AMREX_LINKER = hipcc
+
+    ifdef AMREX_AMD_ARCH
+      AMD_ARCH = $(AMREX_AMD_ARCH)
+    endif
+
+    # For AMD GPUs, the wavefront is 64 except for gfx10??.
+    ifeq ($(findstring gfx10,$(AMD_ARCH)),)
+       DEFINES += -DAMREX_AMDGCN_WAVEFRONT_SIZE=64
+    else
+       DEFINES += -DAMREX_AMDGCN_WAVEFRONT_SIZE=32
+    endif
+
+    ifeq ($(HIP_SAVE_TEMPS),TRUE)
+      ifeq ($(USE_GPU_RDC),TRUE)
+        $(warning *** HIP_SAVE_TEMPS requires USE_GPU_RDC=FALSE to obtain the assembly files for AMD GPU kernels.)
+      endif
+      # Issue: hipcc does not seem to respect the arg to --save-temps
+      CXXFLAGS += --save-temps=$(objEXETempDir)
+    endif
+
+else ifeq ($(USE_CUDA),TRUE)
+
+    ifdef AMREX_CUDA_ARCH
+      CUDA_ARCH = $(AMREX_CUDA_ARCH)
+    endif
+
+    # remove dot in 7.0 if there is
+    override CUDA_ARCH := $(subst .,,$(CUDA_ARCH))
+
+    # Allow the user to specify the location of the CUDA toolkit.
+    # If they don't, check if it has been defined for one of the
+    # systems we know about.
+
+    MAKE_CUDA_PATH :=
+    ifneq ($(CUDA_PATH),)
+        MAKE_CUDA_PATH := $(CUDA_PATH)
+    else ifneq ($(SYSTEM_CUDA_PATH),)
+        MAKE_CUDA_PATH := $(SYSTEM_CUDA_PATH)
+    endif
+
+    LIBRARIES += -lcuda
+
+    ifneq ($(MAKE_CUDA_PATH),)
+        LIBRARY_LOCATIONS += $(MAKE_CUDA_PATH)/lib64
+        SYSTEM_INCLUDE_LOCATIONS += $(MAKE_CUDA_PATH)/include
+    endif
+
+    ifeq ($(nvcc_forward_unknowns),0)
+
+      comm := ,
+      space :=
+      space +=
+
+      ifeq ($(AMREX_LINKER),nvcc)
+        ifeq ($(FIX_NVCC_PTHREAD),TRUE)
+          FINAL_LIBS = $(subst -pthread,-Xcompiler$(space)-pthread,$(subst -Wl$(comm),-Xlinker=,$(libraries)))
+        else
+          FINAL_LIBS = $(subst -Wl$(comm),-Xlinker=,$(libraries))
+        endif
+      endif
+
+    endif # nvcc_forward_unknowns == 0
+
+endif

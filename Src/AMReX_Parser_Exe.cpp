@@ -1,4 +1,10 @@
-#include <AMReX_Parser_Exe.H>
+#include "AMReX_IOFormat.H"
+#include "AMReX_Parser_Exe.H"
+#include <algorithm>
+#include <cassert>
+#include <iomanip>
+#include <iostream>
+#include <stdexcept>
 #include <utility>
 
 namespace amrex {
@@ -6,11 +12,11 @@ namespace amrex {
 void
 parser_compile_exe_size (struct parser_node* node, char*& p, std::size_t& exe_size,
                          int& max_stack_size, int& stack_size,
-                         Vector<char const*>& local_variables)
+                         std::vector<char const*>& local_variables)
 {
     auto parser_symbol_idx = [&] (struct parser_node* snode) -> int
     {
-        AMREX_ASSERT(snode->type == PARSER_SYMBOL);
+        assert(snode->type == PARSER_SYMBOL);
         auto* sym = (struct parser_symbol*)snode;
         auto r = std::find_if(local_variables.rbegin(), local_variables.rend(),
                               [=] (char const* i)
@@ -558,7 +564,7 @@ parser_compile_exe_size (struct parser_node* node, char*& p, std::size_t& exe_si
         break;
     }
     default:
-        amrex::Abort("parser_compile: unknown node type " + std::to_string(node->type));
+        throw std::runtime_error("parser_compile: unknown node type " + std::to_string(node->type));
     }
 }
 
@@ -638,12 +644,15 @@ namespace {
     }
 }
 
-void parser_exe_print(char const* p, Vector<std::string> const& vars,
-                      Vector<char const*> const& locals)
+void parser_exe_print(char const* p, std::vector<std::string> const& vars,
+                      std::vector<char const*> const& locals)
 {
-    Vector<std::pair<std::string,paren_t>> pstack;
+    std::vector<std::pair<std::string,paren_t>> pstack;
     int count = 0;
-    auto& os = amrex::OutStream();
+
+    auto& os = std::cout;
+    IOFormatSaver iofmtsaver(os);
+
     os << "  #     Instruction   StackSize   StackTop\n";
 
     auto get_sym = [&] (int i) -> std::pair<std::string,paren_t>

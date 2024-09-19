@@ -1,0 +1,45 @@
+nohup.out
+*.[oa]
+*.ex
+*.ex.dSYM
+*.exe
+*.exe.dSYM
+*~
+build/
+install/
+tmp_build_dir/
+tmp_install_dir/
+d/
+f/
+o/
+t/
+TAGS
+
+# editors and IDEs
+.idea/
+cmake-build-*/
+.kdev?/
+*.kdev?
+.vscode
+
+# latex
+*.aux
+*.log
+*.bbl
+*.toc
+*.dvi
+*-eps-converted-to.pdf
+
+# python
+*.pyc
+
+.DS_Store
+
+.nfs*
+
+# vi
+*.sw[a-z]
+
+# local config
+Tools/GNUMake/Make.local
+Tools/GNUMake/Make.local-pre

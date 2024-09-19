@@ -1,12 +1,11 @@
 #ifndef AMREX_PARSER_Y_H_
 #define AMREX_PARSER_Y_H_
-#include <AMReX_Config.H>
+#include "AMReX_Config.H"
 
-#include <AMReX_GpuQualifiers.H>
-#include <AMReX_GpuPrint.H>
-#include <AMReX_Math.H>
-#include <AMReX_Print.H>
-#include <AMReX_REAL.H>
+#include "AMReX_BLassert.H"
+#include "AMReX_Gpu.H"
+#include "AMReX_Math.H"
+#include "AMReX_REAL.H"
 
 #include <cstddef>
 #include <cstdio>
@@ -427,7 +426,7 @@ parser_call_f1 (enum parser_f1_t type, double a)
     case PARSER_COMP_ELLINT_2: return parser_math_comp_ellint_2<double>(a);
     case PARSER_ERF:         return parser_math_erf<double>(a);
     default:
-        amrex::Abort("parser_call_f1: Unknown function ");
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(false,"parser_call_f1: Unknown function ");
         return 0.0;
     }
 }
@@ -467,7 +466,7 @@ parser_call_f2 (enum parser_f2_t type, double a, double b)
     case PARSER_FMOD:
         return std::fmod(a,b);
     default:
-        amrex::Abort("parser_call_f2: Unknown function");
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(false,"parser_call_f2: Unknown function");
         return 0.0;
     }
 }

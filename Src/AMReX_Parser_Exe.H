@@ -1,12 +1,13 @@
 #ifndef AMREX_PARSER_EXE_H_
 #define AMREX_PARSER_EXE_H_
-#include <AMReX_Config.H>
+#include "AMReX_Config.H"
 
-#include <AMReX_Parser_Y.H>
-#include <AMReX_Stack.H>
-#include <AMReX_Vector.H>
+#include "AMReX_BLassert.H"
+#include "AMReX_Parser_Y.H"
+#include "AMReX_Stack.H"
 
 #include <limits>
+#include <vector>
 
 #ifndef AMREX_PARSER_STACK_SIZE
 #define AMREX_PARSER_STACK_SIZE 16
@@ -501,7 +502,7 @@ double parser_exe_eval (const char* p, double const* x)
 }
 
 void parser_compile_exe_size (struct parser_node* node, char*& p, std::size_t& exe_size,
-                              int& max_stack_size, int& stack_size, Vector<char const*>& local_variables);
+                              int& max_stack_size, int& stack_size, std::vector<char const*>& local_variables);
 
 inline std::size_t
 parser_exe_size (struct amrex_parser* parser, int& max_stack_size, int& stack_size)
@@ -511,26 +512,26 @@ parser_exe_size (struct amrex_parser* parser, int& max_stack_size, int& stack_si
     std::size_t exe_size = 0;
     max_stack_size = 0;
     stack_size = 0;
-    Vector<char const*> local_variables;
+    std::vector<char const*> local_variables;
     parser_compile_exe_size(parser->ast, p, exe_size, max_stack_size, stack_size, local_variables);
     stack_size -= static_cast<int>(local_variables.size())+1;
     return exe_size+sizeof(ParserExeNull);
 }
 
-inline Vector<char const*>
+inline std::vector<char const*>
 parser_compile (struct amrex_parser* parser, char* p)
 {
     std::size_t exe_size = 0;
     int max_stack_size = 0;
     int stack_size = 0;
-    Vector<char const*> local_variables;
+    std::vector<char const*> local_variables;
     parser_compile_exe_size(parser->ast, p, exe_size, max_stack_size, stack_size, local_variables);
     new(p) ParserExeNull;
     return local_variables;
 }
 
-void parser_exe_print(char const* parser, Vector<std::string> const& vars,
-                      Vector<char const*> const& locals);
+void parser_exe_print(char const* parser, std::vector<std::string> const& vars,
+                      std::vector<char const*> const& locals);
 
 }
 

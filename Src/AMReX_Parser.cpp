@@ -1,9 +1,9 @@
-#include <AMReX_Parser.H>
+#include "AMReX_Parser.H"
 #ifdef _WIN32
 #define YY_NO_UNISTD_H
 #endif
-#include <amrex_parser.lex.h>
-#include <amrex_parser.tab.h>
+#include "amrex_parser.lex.h"
+#include "amrex_parser.tab.h"
 
 #include <algorithm>
 
@@ -42,9 +42,9 @@ Parser::Data::~Data ()
 {
     m_expression.clear();
     if (m_parser) { amrex_parser_delete(m_parser); }
-    if (m_host_executor) { The_Pinned_Arena()->free(m_host_executor); }
+    if (m_host_executor) { amrex::free_host(m_host_executor); }
 #ifdef AMREX_USE_GPU
-    if (m_device_executor) { The_Arena()->free(m_device_executor); }
+    if (m_device_executor) { amrex::free_device(m_device_executor); }
 #endif
 }
 
@@ -62,7 +62,7 @@ Parser::setConstant (std::string const& name, double c)
 }
 
 void
-Parser::registerVariables (Vector<std::string> const& vars)
+Parser::registerVariables (std::vector<std::string> const& vars)
 {
     m_vars = vars;
     if (m_data && m_data->m_parser) {
