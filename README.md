@@ -3,8 +3,8 @@
 ## Overview
 
 This is a standalone mathematical expression parser library extracted from
-the [AMReX](https://github.com/AMReX-Codes/amrex/) software. AMReX is
-designed for high-performance computing applications that solve partial
+the [AMReX](https://github.com/AMReX-Codes/amrex/) software framework. AMReX
+is designed for high-performance computing applications that solve partial
 differential equations on block-structured adaptive meshes. This library is
 for users who wish to utilize the parser functionality without incorporating
 the full AMReX framework. It supports both CPU and GPU architectures,
