@@ -1,22 +1,22 @@
-name: GCC
+name: cuda
 
 on: [push, pull_request]
 
 concurrency:
-  group: ${{ github.ref }}-${{ github.head_ref }}-linux-gcc
+  group: ${{ github.ref }}-${{ github.head_ref }}-cuda
   cancel-in-progress: true
 
 jobs:
   Tests:
-    name: GCC Tests
+    name: CUDA Tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Dependencies
       run: |
-        .github/workflows/dependencies/dependencies_gcc.sh
+        .github/workflows/dependencies/dependencies_nvcc.sh
     - name: Tests
       run: |
-        cd Tests/Parser
-        make -j4
+        cd Tests/GPU
+        make -j4 USE_CUDA=TRUE
         ./main.gnu.ex
