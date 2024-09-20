@@ -26,7 +26,7 @@ source /etc/os-release # set UBUNTU_CODENAME: focal or jammy or ...
 echo "deb [arch=amd64] https://repo.radeon.com/rocm/apt/${1-latest} ${UBUNTU_CODENAME} main" \
   | sudo tee /etc/apt/sources.list.d/rocm.list
 
-echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | sudo tee /etc/apt/preferences.d/rocm-pin-600 
+echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | sudo tee /etc/apt/preferences.d/rocm-pin-600
 
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends \
