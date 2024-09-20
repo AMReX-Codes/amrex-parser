@@ -15,8 +15,9 @@ sudo apt-get install -y \
     cmake               \
     g++
 
-source /etc/os-release # set UBUNTU_CODENAME
-wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu${VERSION_ID}/x86_64/cuda-keyring_1.1-1_all.deb
+source /etc/os-release # set VERSION_ID
+distro=ubuntu$(sed 's/\.//' <<< ${VERSION_ID})
+wget https://developer.download.nvidia.com/compute/cuda/repos/${distro}/x86_64/cuda-keyring_1.1-1_all.deb
 sudo dpkg -i cuda-keyring_1.1-1_all.deb
 sudo apt-get update
 sudo apt-get install -y \
