@@ -1,0 +1,30 @@
+name: clang
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "22 22 * * 6"
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.head_ref }}-clang
+  cancel-in-progress: true
+
+jobs:
+  Tests:
+    name: Clang CPU Tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_clang.sh
+    - name: Tests
+      run: |
+        cd Tests/Parser
+        make -j4 COMP=clang
+        ./main.llvm.ex
+
+        cd ../GPU
+        make -j4 USE_CPU=TRUE COMP=clang
+        ./main.llvm.ex
