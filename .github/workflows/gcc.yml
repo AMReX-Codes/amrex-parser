@@ -21,6 +21,6 @@ jobs:
         make -j4
         ./main.gnu.ex
 
-        cd Tests/GPU
+        cd ../GPU
         make -j4 USE_CPU=TRUE
         ./main.gnu.ex

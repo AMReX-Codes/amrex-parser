@@ -20,8 +20,10 @@ distro=ubuntu$(sed 's/\.//' <<< ${VERSION_ID})
 wget https://developer.download.nvidia.com/compute/cuda/repos/${distro}/x86_64/cuda-keyring_1.1-1_all.deb
 sudo dpkg -i cuda-keyring_1.1-1_all.deb
 sudo apt-get update
-CUDA_VERSION=$(apt-cache search cuda-compiler* | tail -n1 | cut -d' '  -f1 | sed 's/cuda-compiler-//')
+VERSION_DASHED=$(apt-cache search cuda-compiler* | tail -n1 | cut -d' '  -f1 | sed 's/cuda-compiler-//')
+VERSON_DOTTED=$(sed 's/-/\./' <<< $VERSION_DASHED)
 sudo apt-get install -y \
-    cuda-command-line-tools-$CUDA_VERSION \
-    cuda-compiler-$CUDA_VERSION           \
-    cuda-minimal-build-$CUDA_VERSION
+    cuda-command-line-tools-$VERSION_DASHED \
+    cuda-compiler-$VERSION_DASHED           \
+    cuda-minimal-build-$VERSION_DASHED
+sudo ln -s cuda-$VERSION_DOTTED /usr/local/cuda

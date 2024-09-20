@@ -17,6 +17,10 @@ jobs:
         .github/workflows/dependencies/dependencies_nvcc.sh
     - name: Tests
       run: |
+        export PATH=/usr/local/cuda/bin:${PATH}
+        export LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
+        which nvcc || echo "nvcc not in PATH!"
+
         cd Tests/GPU
         make -j4 USE_CUDA=TRUE
         ./main.gnu.ex
