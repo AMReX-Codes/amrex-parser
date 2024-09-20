@@ -59,7 +59,6 @@ ifeq ($(lowercase_nvcc_host_comp),gnu)
   NVCC_CCBIN ?= g++
 
   CXXFLAGS_FROM_HOST := -ccbin=$(NVCC_CCBIN) -Xcompiler='$(CXXFLAGS)' --std=$(CXXSTD)
-  CFLAGS_FROM_HOST := $(CXXFLAGS_FROM_HOST)
   ifeq ($(USE_OMP),TRUE)
      LIBRARIES += -lgomp
   endif
@@ -76,7 +75,6 @@ else ifeq ($(lowercase_nvcc_host_comp),pgi)
 
   # In pgi.make, we use gcc_major_version to handle c++17 flag.
   CXXFLAGS_FROM_HOST := -ccbin=$(NVCC_CCBIN) -Xcompiler='$(CXXFLAGS)' --std=$(CXXSTD)
-  CFLAGS_FROM_HOST := $(CXXFLAGS_FROM_HOST)
 else
   ifdef CXXSTD
     CXXSTD := $(strip $(CXXSTD))
@@ -87,7 +85,6 @@ else
   NVCC_CCBIN ?= $(CXX)
 
   CXXFLAGS_FROM_HOST := -ccbin=$(NVCC_CCBIN) -Xcompiler='$(CXXFLAGS)' --std=$(CXXSTD)
-  CFLAGS_FROM_HOST := $(CXXFLAGS_FROM_HOST)
 endif
 
 NVCC_ARCH_FLAGS = $(foreach arch,$(CUDA_ARCH),--generate-code arch=compute_$(arch),code=sm_$(arch))
@@ -156,15 +153,11 @@ ifeq ($(nvcc_diag_error),1)
 endif
 
 CXXFLAGS = $(CXXFLAGS_FROM_HOST) $(NVCC_FLAGS) $(NVCC_ARCH_COMPILE_FLAGS) -x cu
-CFLAGS   =   $(CFLAGS_FROM_HOST) $(NVCC_FLAGS) $(NVCC_ARCH_COMPILE_FLAGS) -x cu
 
 ifeq ($(USE_GPU_RDC),TRUE)
   CXXFLAGS += -dc
-  CFLAGS   += -dc
 else
   CXXFLAGS += -c
-  CFLAGS   += -c
 endif
 
 CXX = nvcc
-CC  = nvcc

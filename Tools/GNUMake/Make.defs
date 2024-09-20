@@ -188,32 +188,12 @@ ifdef AMREX_CCOMP
     AMREX_CCOMP = gnu
   else ifeq ($(lowercase_amrex_ccomp),intel)
     AMREX_CCOMP = intel
-  else ifeq ($(lowercase_amrex_ccomp),intel-llvm)
-    AMREX_CCOMP = intel-llvm
-  else ifeq ($(lowercase_amrex_ccomp),intel-classic)
-    AMREX_CCOMP = intel-classic
   else ifeq ($(lowercase_amrex_ccomp),sycl)
     AMREX_CCOMP = sycl
-  else ifeq ($(lowercase_amrex_ccomp),cray)
-    AMREX_CCOMP = cray
-  else ifeq ($(lowercase_amrex_ccomp),pgi)
-    AMREX_CCOMP = pgi
-  else ifeq ($(lowercase_amrex_ccomp),nvhpc)
-    AMREX_CCOMP = nvhpc
-  else ifeq ($(lowercase_amrex_ccomp),ibm)
-    AMREX_CCOMP = ibm
   else ifeq ($(lowercase_amrex_ccomp),$(filter $(lowercase_amrex_ccomp),llvm clang clang++))
     AMREX_CCOMP = clang
-  else ifeq ($(lowercase_amrex_ccomp),$(filter $(lowercase_amrex_ccomp),llvm-flang flang))
-    AMREX_CCOMP = clang
-  else ifeq ($(lowercase_amrex_ccomp),nag)
-    AMREX_CCOMP = gnu
-  else ifeq ($(lowercase_amrex_ccomp),nec)
-    AMREX_CCOMP = nec
-  else ifeq ($(lowercase_amrex_ccomp),armclang)
-    AMREX_CCOMP = armclang
   else
-    $(error Unknown compiler $(AMREX_CCOMP). Supported compilers are gnu, intel, intel-llvm, intel-classic, sycl, cray, pgi, nvhpc, ibm, llvm, nag, nec, and armclang)
+    $(error Unknown compiler $(AMREX_CCOMP) to the make system)
   endif
 endif
 
@@ -221,90 +201,31 @@ lowercase_comp = $(shell echo $(COMP) | tr A-Z a-z)
 
 ifeq ($(lowercase_comp),$(filter $(lowercase_comp),gcc gnu g++))
   lowercase_comp = gnu
-  AMREX_FCOMP ?= gnu
   AMREX_CCOMP ?= gnu
   $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/gnu.mak...)
   include        $(AMREX_HOME)/Tools/GNUMake/comps/gnu.mak
 else ifeq ($(lowercase_comp),intel)
-  AMREX_FCOMP ?= intel
   AMREX_CCOMP ?= intel
   $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/intel.mak...)
   include        $(AMREX_HOME)/Tools/GNUMake/comps/intel.mak
-else ifeq ($(lowercase_comp),intel-llvm)
-  AMREX_FCOMP ?= intel-llvm
-  AMREX_CCOMP ?= intel-llvm
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/intel-llvm.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/intel-llvm.mak
-else ifeq ($(lowercase_comp),intel-classic)
-  AMREX_FCOMP ?= intel-classic
-  AMREX_CCOMP ?= intel-classic
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/intel-classic.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/intel-classic.mak
 else ifeq ($(lowercase_comp),sycl)
-  AMREX_FCOMP ?= none
   AMREX_CCOMP ?= sycl
   $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/dpcpp.mak...)
   include        $(AMREX_HOME)/Tools/GNUMake/comps/dpcpp.mak
-else ifeq ($(lowercase_comp),cray)
-  AMREX_FCOMP ?= cray
-  AMREX_CCOMP ?= cray
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/cray.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/cray.mak
-else ifeq ($(lowercase_comp),pgi)
-  AMREX_FCOMP ?= pgi
-  AMREX_CCOMP ?= pgi
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/pgi.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/pgi.mak
-else ifeq ($(lowercase_comp),nvhpc)
-  AMREX_FCOMP ?= nvhpc
-  AMREX_CCOMP ?= nvhpc
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/nvhpc.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/nvhpc.mak
-else ifeq ($(lowercase_comp),ibm)
-  AMREX_FCOMP ?= ibm
-  AMREX_CCOMP ?= ibm
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/ibm.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/ibm.mak
 else ifeq ($(lowercase_comp),$(filter $(lowercase_comp),llvm clang clang++))
   lowercase_comp = llvm
-  AMREX_FCOMP ?= gnu
   AMREX_CCOMP ?= clang
   $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/llvm.mak...)
   include        $(AMREX_HOME)/Tools/GNUMake/comps/llvm.mak
-else ifeq ($(lowercase_comp),$(filter $(lowercase_comp),llvm-flang flang))
-  lowercase_comp = llvm-flang
-  AMREX_FCOMP ?= flang
-  AMREX_CCOMP ?= clang
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/llvm-flang.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/llvm-flang.mak
-else ifeq ($(lowercase_comp),nag)
-  AMREX_FCOMP ?= nag
-  AMREX_CCOMP ?= gnu
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/nag.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/nag.mak
-else ifeq ($(lowercase_comp),nec)
-  AMREX_FCOMP ?= nec
-  AMREX_CCOMP ?= nec
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/nec.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/nec.mak
-else ifeq ($(lowercase_comp),armclang)
-  AMREX_FCOMP ?= armflang
-  AMREX_CCOMP ?= armclang
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/armclang.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/armclang.mak
 else ifeq ($(lowercase_comp),hip)
-  AMREX_FCOMP ?= gnu
   AMREX_CCOMP ?= hip
   $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/hip.mak...)
   include        $(AMREX_HOME)/Tools/GNUMake/comps/hip.mak
 else
-  $(error Unknown compiler $(COMP). Supported compilers are gnu, intel, intel-llvm, intel-classic, sycl, cray, pgi, nvhpc, ibm, llvm, nag, and nec)
+  $(error Unknown compiler $(COMP) to the make system.)
 endif
 
 CXXFLAGS += $(XTRA_CXXFLAGS)
-CFLAGS   += $(XTRA_CFLAGS)
-FFLAGS   += $(XTRA_FFLAGS)
-F90FLAGS += $(XTRA_F90FLAGS)
 CPPFLAGS += $(XTRA_CPPFLAGS)
 
 ifeq ($(DEBUG),TRUE)

@@ -54,12 +54,10 @@ ifeq ($(WARN_ALL),TRUE)
   endif
 
   CXXFLAGS += $(warning_flags) -Woverloaded-virtual
-  CFLAGS += $(warning_flags)
 endif
 
 ifeq ($(WARN_ERROR),TRUE)
   CXXFLAGS += -Werror -Wno-deprecated-declarations -Wno-gnu-zero-variadic-macro-arguments
-  CFLAGS += -Werror
 endif
 
 # Generic HIP info

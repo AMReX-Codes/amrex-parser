@@ -105,28 +105,23 @@ ifeq ($(WARN_ALL),TRUE)
   endif
 
   CXXFLAGS += $(warning_flags) -Woverloaded-virtual -Wnon-virtual-dtor
-  CFLAGS += $(warning_flags)
 endif
 
 ifeq ($(WARN_ERROR),TRUE)
   CXXFLAGS += -Werror
-  CFLAGS += -Werror
 endif
 
 ifeq ($(USE_GPROF),TRUE)
   CXXFLAGS += -pg
-  CFLAGS += -pg
 endif
 
 
 ifeq ($(USE_COMPILE_PIC),TRUE)
   CXXFLAGS = -fPIC
-  CFLAGS = -fPIC
 endif
 
 ifeq ($(ERROR_DEPRECATED),TRUE)
   CXXFLAGS += -Werror=deprecated
-  CFLAGS += -Werror=deprecated
 endif
 
 ########################################################################
