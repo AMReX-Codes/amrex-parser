@@ -21,7 +21,7 @@ jobs:
         .github/workflows/dependencies/dependencies_hip.sh
     - name: Tests
       run: |
-        source /etc/profile.d/rocm.sh
+        export PATH=/opt/rocm/bin:$PATH
         hipcc --version
 
         cd Tests/GPU
