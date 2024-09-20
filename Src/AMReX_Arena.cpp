@@ -34,8 +34,6 @@ void free_host (void* pt)
 #endif
 }
 
-#ifdef AMREX_USE_GPU
-
 void* allocate_device (std::size_t sz)
 {
     void* p;
@@ -46,7 +44,7 @@ void* allocate_device (std::size_t sz)
 #elif defined(AMREX_USE_SYCL)
     p = sycl::malloc_device(...);
 #else
-    static_assert(false);
+    p = std::malloc(sz);
 #endif
     return p;
 }
@@ -60,11 +58,8 @@ void free_device (void* pt)
 #elif defined(AMREX_USE_SYCL)
     sycl::free(...);
 #else
-    static_assert(false);
+    std::free(pt);
 #endif
-
 }
-
-#endif
 
 }

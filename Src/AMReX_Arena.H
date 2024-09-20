@@ -10,11 +10,9 @@ namespace amrex
 
     void free_host (void* pt);
 
-#ifdef AMREX_USE_GPU
     [[nodiscard]] void* allocate_device (std::size_t sz);
 
     void free_device (void* pt);
-#endif
 }
 
 #endif

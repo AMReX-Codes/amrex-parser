@@ -14,7 +14,8 @@ CEXE_headers += AMReX_Arena.H \
                 AMReX_Parser_Y.H \
                 AMReX_REAL.H \
                 AMReX_Stack.H \
-                AMReX_TypeTraits.H
+                AMReX_TypeTraits.H \
+                AMReX_Utility.H
 
 CEXE_sources += AMReX_Arena.cpp \
                 AMReX_BLassert.cpp \
@@ -23,7 +24,8 @@ CEXE_sources += AMReX_Arena.cpp \
                 AMReX_Parser_Exe.cpp \
                 amrex_parser.lex.cpp \
                 amrex_parser.tab.cpp \
-                AMReX_Parser_Y.cpp
+                AMReX_Parser_Y.cpp \
+                AMReX_Utility.cpp
 
 VPATH_LOCATIONS += $(AMREX_HOME)/Src
 INCLUDE_LOCATIONS += $(AMREX_HOME)/Src

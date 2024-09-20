@@ -10,6 +10,13 @@ USE_CUDA  = TRUE
 USE_HIP   = FALSE
 USE_SYCL  = FALSE
 
+USE_CPU = FALSE
+ifeq ($(USE_CPU),TRUE)
+  USE_CUDA  = FALSE
+  USE_HIP   = FALSE
+  USE_SYCL  = FALSE
+endif
+
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 include ./Make.package
 include $(AMREX_HOME)/Src/Make.package

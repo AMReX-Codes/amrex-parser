@@ -17,16 +17,36 @@ void setStream (gpuStream_t a_stream)
     gpu_stream = a_stream;
 }
 
+[[nodiscard]] gpuStream_t getStream ()
+{
+    return gpu_stream;
+}
+
+void streamSynchronize ()
+{
+#if defined(AMREX_USE_CUDA)
+    cudaStreamSynchronize(gpu_stream);
+#elif defined(AMREX_USE_HIP)
+    hipStreamSynchronize(gpu_stream);
+#elif defined(AMREX_USE_SYCL)
+    static_assert(false);
+#else
+    static_assert(false);
+#endif
+}
+
 void htod_memcpy (void* p_d, void const* p_h, std::size_t sz)
 {
 #if defined(AMREX_USE_CUDA)
     cudaMemcpyAsync(p_d, p_h, sz, cudaMemcpyHostToDevice, gpu_stream);
-    cudaStreamSynchronize(gpu_stream);
 #elif defined(AMREX_USE_HIP)
+    hipMemcpyAsync(p_d, p_h, sz, hipMemcpyHostToDevice, gpu_stream);
 #elif defined(AMREX_USE_SYCL)
+    static_assert(false);
 #else
     static_assert(false);
 #endif
+    streamSynchronize();
 }
 
 }

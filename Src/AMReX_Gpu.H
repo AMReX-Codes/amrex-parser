@@ -1,7 +1,10 @@
 #ifndef AMREX_GPU_H_
 #define AMREX_GPU_H_
+#include "AMReX_Config.H"
 
+#include "AMReX_Extension.H"
 #include <cstdlib>
+#include <type_traits>
 
 #if defined(AMREX_USE_GPU) && !defined(AMREX_USE_SYCL)
 
@@ -72,8 +75,9 @@
                                               AMREX_DGVARR, AMREX_DGV,\
                                               AMREX_WRONG_NUM_ARGS)(__VA_ARGS__)
 
-#ifdef AMREX_USE_GPU
 namespace amrex {
+
+#ifdef AMREX_USE_GPU
 
 #if defined(AMREX_USE_CUDA)
 using gpuStream_t = cudaStream_t;
@@ -83,13 +87,59 @@ using gpuStream_t = hipStream_t;
 using gpuStream_t = sycl::queue*;
 #endif
 
+#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
+
+template<int amrex_launch_bounds_max_threads, class L>
+__launch_bounds__(amrex_launch_bounds_max_threads)
+__global__ void launch_global (L f0) { f0(); }
+
+#endif
+
 namespace Gpu {
 
     void setStream (gpuStream_t a_stream);
 
+    gpuStream_t getStream ();
+
     void htod_memcpy (void* p_d, void const* p_h, std::size_t sz);
+
+    void streamSynchronize ();
 }
+
+#if defined(AMREX_USE_CUDA)
+
+template <typename T, typename L, typename M=std::enable_if_t<std::is_integral_v<T>> >
+void ParallelFor (T n, L const& f)
+{
+    if (n <= 0) { return; }
+
+    constexpr unsigned int max_threads = 256;
+    auto nblocks = static_cast<unsigned int>((n+(max_threads-1)) / max_threads);
+    launch_global<256><<<nblocks,max_threads,0,Gpu::getStream()>>>(
+        [=] AMREX_GPU_DEVICE
+        {
+            auto i = T(blockDim.x*blockIdx.x+threadIdx.x);
+            if (i < n) { f(i); }
+        });
 }
+
 #endif
+
+#else /* CPU */
+
+namespace Gpu {
+    inline void streamSynchronize () {}
+}
+
+template <typename T, typename L, typename M=std::enable_if_t<std::is_integral_v<T>> >
+AMREX_ATTRIBUTE_FLATTEN_FOR
+void ParallelFor (T n, L const& f)
+{
+    for (T i = 0; i < n; ++i) { f(i); }
+}
+
+#endif
+
+}
 
 #endif

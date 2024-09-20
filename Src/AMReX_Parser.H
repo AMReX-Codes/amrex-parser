@@ -6,6 +6,7 @@
 #include "AMReX_Parser_Exe.H"
 #include "AMReX_REAL.H"
 #include "AMReX_TypeTraits.H"
+#include "AMReX_Utility.H"
 
 #include <cassert>
 #include <memory>
