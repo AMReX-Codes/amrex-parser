@@ -25,10 +25,8 @@ source /etc/os-release # set UBUNTU_CODENAME: focal or jammy or ...
 
 echo "deb [arch=amd64] https://repo.radeon.com/rocm/apt/${1-latest} ${UBUNTU_CODENAME} main" \
   | sudo tee /etc/apt/sources.list.d/rocm.list
-echo 'export PATH=/opt/rocm/llvm/bin:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin:$PATH' \
-  | sudo tee -a /etc/profile.d/rocm.sh
 
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends \
     build-essential \
-    rocm-dev
+    rocm

@@ -1,4 +1,4 @@
-name: cuda
+name: hip
 
 on:
   push:
