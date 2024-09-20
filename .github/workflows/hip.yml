@@ -1,0 +1,28 @@
+name: cuda
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "22 22 * * 6"
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.head_ref }}-hip
+  cancel-in-progress: true
+
+jobs:
+  Tests:
+    name: HIP Tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_hip.sh
+    - name: Tests
+      run: |
+        source /etc/profile.d/rocm.sh
+        hipcc --version
+
+        cd Tests/GPU
+        make -j4 USE_HIP=TRUE
