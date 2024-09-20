@@ -1,6 +1,7 @@
 #include "AMReX_Parser.H"
 #include <array>
 #include <cstdlib>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <string>
@@ -41,8 +42,8 @@ int test1 (std::string const& f,
         Real abserror = std::abs(result-benchmark);
         Real relerror = abserror / (1.e-50 + std::max(std::abs(result),std::abs(benchmark)));
         if (abserror > abstol && relerror > reltol) {
-            std::cout << "\n    f(" << x << ") = " << result << ", "
-                           << benchmark;
+            std::cout << std::setprecision(17)
+                      << "\n    f(" << x << ") = " << result << ", " << benchmark;
             max_relerror = std::max(max_relerror, relerror);
             ++nfail;
         }
