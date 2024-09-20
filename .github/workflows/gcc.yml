@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@4
     - name: Dependencies
-      run |
+      run: |
         .github/workflows/dependencies/dependencies_gcc.sh
     - name: Tests
       run: |
