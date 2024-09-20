@@ -21,7 +21,7 @@ void Assert (const char* EX, const char* file, int line, const char* msg)
 {
     AMREX_IF_ON_HOST((Assert_host(EX,file,line,msg);))
     AMREX_IF_ON_DEVICE((amrex::ignore_unused(EX,file,line,msg);))
-    AMREX_IF_ON_DEVICE((assert(0)));
+    AMREX_IF_ON_DEVICE((assert(0);))
 }
 
 }

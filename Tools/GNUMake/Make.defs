@@ -481,6 +481,9 @@ else ifeq ($(USE_CUDA),TRUE)
         SYSTEM_INCLUDE_LOCATIONS += $(MAKE_CUDA_PATH)/include
     endif
 
+    LINKFLAGS = $(NVCC_FLAGS) $(NVCC_ARCH_LINK_FLAGS) $(CXXFLAGS_FROM_HOST)
+    AMREX_LINKER = nvcc
+
     ifeq ($(nvcc_forward_unknowns),0)
 
       comm := ,

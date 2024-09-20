@@ -18,6 +18,7 @@ CEXE_headers += AMReX_Arena.H \
 
 CEXE_sources += AMReX_Arena.cpp \
                 AMReX_BLassert.cpp \
+                AMReX_Gpu.cpp \
                 AMReX_Parser.cpp \
                 AMReX_Parser_Exe.cpp \
                 amrex_parser.lex.cpp \

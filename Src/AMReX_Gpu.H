@@ -1,5 +1,8 @@
 #ifndef AMREX_GPU_H_
 #define AMREX_GPU_H_
+
+#include <cstdlib>
+
 #if defined(AMREX_USE_GPU) && !defined(AMREX_USE_SYCL)
 
 #if defined(AMREX_USE_HIP)
@@ -70,12 +73,22 @@
                                               AMREX_WRONG_NUM_ARGS)(__VA_ARGS__)
 
 #ifdef AMREX_USE_GPU
-namespace amrex::Gpu {
+namespace amrex {
 
-// add init(); // to get stream I am supposed to use
+#if defined(AMREX_USE_CUDA)
+using gpuStream_t = cudaStream_t;
+#elif defined(AMREX_USE_HIP)
+using gpuStream_t = hipStream_t;
+#elif defined(AMREX_USE_SYCL)
+using gpuStream_t = sycl::queue*;
+#endif
 
-void htod_memcpy (....); // todo: need to synchronize too, use default stream
+namespace Gpu {
 
+    void setStream (gpuStream_t a_stream);
+
+    void htod_memcpy (void* p_d, void const* p_h, std::size_t sz);
+}
 }
 #endif
 
