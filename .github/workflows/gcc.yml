@@ -1,6 +1,10 @@
 name: GCC
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "22 22 * * 6"
 
 concurrency:
   group: ${{ github.ref }}-${{ github.head_ref }}-linux-gcc

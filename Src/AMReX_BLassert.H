@@ -6,6 +6,8 @@
 #include "AMReX_Extension.H"
 #include "AMReX_Gpu.H"
 #include <cassert>
+#include <stdexcept>
+#include <string>
 
 namespace amrex {
 
@@ -29,4 +31,29 @@ void Assert (const char* EX, const char* file, int line, const char* msg)
 #define AMREX_ALWAYS_ASSERT_WITH_MESSAGE(EX,MSG) (EX)?((void)0):amrex::Assert( # EX , __FILE__, __LINE__ , # MSG)
 #define AMREX_ALWAYS_ASSERT(EX) (EX)?((void)0):amrex::Assert( # EX , __FILE__, __LINE__)
 
-#endif /*BL_BL_ASSERT_H*/
+
+#if defined (AMREX_USE_CUDA)
+
+#define AMREX_CUDA_SAFE_CALL(call) {  \
+    auto amrex_i_err = call;   \
+    if (cudaSuccess != amrex_i_err) { \
+        std::string errStr(std::string("CUDA error in file ") + __FILE__ \
+                           + " line " + std::to_string(__LINE__) \
+                           + ": " + cudaGetErrorString(amrex_i_err)); \
+        throw std::runtime_error(errStr); \
+    }}
+
+#elif defined (AMREX_USE_HIP)
+
+#define AMREX_HIP_SAFE_CALL(call) { \
+    auto amrex_i_err = call;         \
+    if (hipSuccess != amrex_i_err) { \
+        std::string errStr(std::string("HIP error in file ") + __FILE__ \
+                           + " line " + std::to_string(__LINE__) \
+                           + " " + hipGetErrorString(amrex_i_err)); \
+        throw std::runtime_error(errStr); \
+    }}
+
+#endif
+
+#endif

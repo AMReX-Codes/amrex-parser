@@ -1,4 +1,5 @@
 #include "AMReX_Arena.H"
+#include "AMReX_BLassert.H"
 #include "AMReX_Gpu.H"
 
 namespace amrex
@@ -8,11 +9,12 @@ void* allocate_host (std::size_t sz)
 {
 #if defined(AMREX_USE_CUDA)
     void* p;
-    cudaHostAlloc(&p, sz, cudaHostAllocMapped);
+    AMREX_CUDA_SAFE_CALL(cudaHostAlloc(&p, sz, cudaHostAllocMapped));
     return p;
 #elif defined(AMREX_USE_HIP)
     void* p;
-    hipHostAlloc(&p, sz, hipHostAllocMapped | hipHostMallocNonCoherent);
+    AMREX_HIP_SAFE_CALL(hipHostMalloc(&p, sz, hipHostMallocMapped |
+                                      hipHostMallocNonCoherent));
     return p;
 #elif defined(AMREX_USE_SYCL)
     return sycl::malloc_host(...);
@@ -24,9 +26,9 @@ void* allocate_host (std::size_t sz)
 void free_host (void* pt)
 {
 #if defined(AMREX_USE_CUDA)
-    cudaFreeHost(pt);
+    AMREX_CUDA_SAFE_CALL(cudaFreeHost(pt));
 #elif defined(AMREX_USE_HIP)
-    hipHostFree(pt);
+    AMREX_HIP_SAFE_CALL(hipHostFree(pt));
 #elif defined(AMREX_USE_SYCL)
     sycl::free(...);
 #else
@@ -38,9 +40,9 @@ void* allocate_device (std::size_t sz)
 {
     void* p;
 #if defined(AMREX_USE_CUDA)
-    cudaMalloc(&p, sz);
+    AMREX_CUDA_SAFE_CALL(cudaMalloc(&p, sz));
 #elif defined(AMREX_USE_HIP)
-    hipMalloc(&p, sz);
+    AMREX_HIP_SAFE_CALL(hipMalloc(&p, sz));
 #elif defined(AMREX_USE_SYCL)
     p = sycl::malloc_device(...);
 #else
@@ -52,9 +54,9 @@ void* allocate_device (std::size_t sz)
 void free_device (void* pt)
 {
 #if defined(AMREX_USE_CUDA)
-    cudaFree(pt);
+    AMREX_CUDA_SAFE_CALL(cudaFree(pt));
 #elif defined(AMREX_USE_HIP)
-    hipFree(pt);
+    AMREX_HIP_SAFE_CALL(hipFree(pt));
 #elif defined(AMREX_USE_SYCL)
     sycl::free(...);
 #else

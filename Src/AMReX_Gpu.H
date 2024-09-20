@@ -8,7 +8,9 @@
 
 #if defined(AMREX_USE_GPU) && !defined(AMREX_USE_SYCL)
 
-#if defined(AMREX_USE_HIP)
+#if defined(AMREX_USE_CUDA)
+#include <cuda_runtime.h>
+#elif defined(AMREX_USE_HIP)
 #include <hip/hip_runtime.h>
 #endif
 
@@ -106,7 +108,7 @@ namespace Gpu {
     void streamSynchronize ();
 }
 
-#if defined(AMREX_USE_CUDA)
+#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
 
 template <typename T, typename L, typename M=std::enable_if_t<std::is_integral_v<T>> >
 void ParallelFor (T n, L const& f)

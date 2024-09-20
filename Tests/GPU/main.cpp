@@ -11,7 +11,7 @@ int main (int argc, char* argv[])
 {
     amrex::ignore_unused(argc, argv);
 
-    std::size_t N = 256*256*256;
+    std::size_t N = 256*256*256*8;
     auto* p = (double*)allocate_device(N*sizeof(double));
 
     Parser parser("epsilon/kp*2*x/w0**2*exp(-(x**2+y**2)/w0**2)*sin(k0*z)");

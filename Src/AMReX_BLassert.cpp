@@ -1,7 +1,6 @@
 #include "AMReX_BLassert.H"
 
 #include <cstdio>
-#include <stdexcept>
 
 namespace amrex
 {
