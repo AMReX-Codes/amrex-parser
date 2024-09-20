@@ -1,0 +1,22 @@
+name: GCC
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.head_ref }}-linux-gcc
+  cancel-in-progress: true
+
+jobs:
+  gcc_gmake:
+    name: GCC & GNU Make
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@4
+    - name: Dependencies
+      run |
+        .github/workflows/dependencies/dependencies_gcc.sh
+    - name: Tests
+      run: |
+        cd Tests/Parser
+        make -j4
+        ./main.gnu.ex

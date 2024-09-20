@@ -421,11 +421,6 @@ else
   CCACHE =
 endif
 
-ifeq ($(USE_CLANG_TIDY),TRUE)
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/tools/Make.clang-tidy)
-  include        $(AMREX_HOME)/Tools/GNUMake/tools/Make.clang-tidy
-endif
-
 ifneq ("$(wildcard $(AMREX_HOME)/Tools/GNUMake/Make.local)","")
   $(info Loading $(AMREX_HOME)/Tools/GNUMake/Make.local...)
   include        $(AMREX_HOME)/Tools/GNUMake/Make.local

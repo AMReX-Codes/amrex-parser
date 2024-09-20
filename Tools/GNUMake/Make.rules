@@ -17,24 +17,15 @@ else ifeq ($(VERBOSE),FALSE)
 endif
 
 ifndef LINKFLAGS
-ifeq ($(LINK_WITH_FORTRAN_COMPILER),TRUE)
-  LINKFLAGS = $(F90FLAGS) $(FMODULES)
-else
   # $(EXTRACXXFLAGS) does not go into LINKFLAGS
   LINKFLAGS = $(CXXFLAGS)
 endif
-endif
 
 ifndef AMREX_LINKER
-ifeq ($(LINK_WITH_FORTRAN_COMPILER),TRUE)
-  AMREX_LINKER = $(F90)
-else
   AMREX_LINKER = $(CXX)
-endif
 endif
 
 CXXDEPFLAGS = $(LEGACY_DEPFLAGS) $(filter-out -dc,$(CXXFLAGS)) $(CPPFLAGS) $(includes)
-CDEPFLAGS = $(LEGACY_DEPFLAGS) $(filter-out -dc,$(CFLAGS)) -DBL_LANG_C -DAMREX_LANG_C $(CPPFLAGS) $(includes)
 
 ifneq ($(CCACHE),)
   ifneq ($(AMREX_CCACHE_ENV),)
@@ -47,41 +38,13 @@ endif
 #
 # Rules for building executable.
 #
-ifeq ($(multiple_executables),)
 
 # only one executable
 $(executable): $(objForExecs)
 ifneq ($(SKIP_LINKING),TRUE)
 	@echo Linking $@ ...
-ifeq ($(LOG_BUILD_TIME),TRUE)
-	@date +"%s" > $(tmpEXETempDir)/link.log
-endif
-ifeq ($(LINK_WITH_FORTRAN_COMPILER),TRUE)
-	$(SILENT) $(AMREX_LINKER) $(LINKFLAGS) $(FCPPFLAGS) $(fincludes) $(LDFLAGS) -o $@ $^ $(FINAL_LIBS)
-else
 	$(SILENT) $(AMREX_LINKER) $(LINKFLAGS) $(CPPFLAGS) $(includes) $(LDFLAGS) -o $@ $^ $(FINAL_LIBS)
-endif
-ifeq ($(LOG_BUILD_TIME),TRUE)
-	@date +"%s" >> $(tmpEXETempDir)/link.log
-	@$(SHELL) -ec '$(GATHERBUILDTIME) $(tmpEXETempDir)/build_time.txt $(build_time_begin) $$(date +"%s")'
-endif
 #	@echo SUCCESS
-ifdef CRAY_CPU_TARGET
-	@echo "Built for target ===> $(CRAY_CPU_TARGET) <==="
-endif
-endif
-
-else
-
-# multiple executables
-%.$(machineSuffix).ex:%.cpp $(objForExecs)
-ifeq ($(USE_CLANG_TIDY),TRUE)
-	$(SILENT) $(CLANG_TIDY) $(CLANG_TIDY_ARGS) $< -- $(CXXFLAGS) $(EXTRACXXFLAGS) $(CPPFLAGS) $(includes) $(mpicxx_include_dirs)
-endif
-	$(SILENT) $(CCACHE_COMMAND) $(CCACHEFLAGS) $(CXX) $(DEPFLAGS) $(CXXFLAGS) $(EXTRACXXFLAGS) $(CPPFLAGS) $(includes) $(mpicxx_include_dirs) -c $< -o $(objEXETempDir)/$(subst /,_,$<).o
-	@echo "Linking $@ ..."
-	$(SILENT) $(AMREX_LINKER) $(LINKFLAGS) $(CPPFLAGS) $(includes) $(LDFLAGS) -o $@ $(objEXETempDir)/$(subst /,_,$<).o $(objForExecs) $(FINAL_LIBS)
-
 endif
 
 $(srcTempDir)/AMReX_Config.H:
@@ -91,16 +54,6 @@ $(srcTempDir)/AMReX_Config.H:
 	              --comp="$(lowercase_comp)" \
 	              --allow-different-compiler="$(ALLOW_DIFFERENT_COMP)" \
 	              > $@
-
-ifeq ($(USE_PROFPARSER),TRUE)
-BLProfParser.tab.H BLProfParser.tab.cpp: $(AMREX_HOME)/Src/Extern/ProfParser/BLProfParser.y
-	cat $(AMREX_HOME)/Src/Extern/ProfParser/BLProfParser.y $(SED0) $(SED1) > BLProfParserNC.y
-	bison --defines=BLProfParser.tab.H --output=BLProfParser.tab.cpp \
-		BLProfParserNC.y
-
-BLProfParser.lex.yy.cpp: BLProfParser.tab.H $(AMREX_HOME)/Src/Extern/ProfParser/BLProfParser.l
-	flex --outfile=BLProfParser.lex.yy.cpp $(AMREX_HOME)/Src/Extern/ProfParser/BLProfParser.l
-endif
 
 $(amrexlib): $(objForExecs)
 	@echo Building libamrex.a
@@ -133,7 +86,7 @@ install_headers:
 	@echo Installing headers at $(amrexIncludeDir) ...
 	@if [ ! -d $(amrexIncludeDir) ]; then mkdir -p $(amrexIncludeDir); fi
 	@for d in $(Pdirs); do \
-	  for h in $(CEXE_headers) $(cEXE_headers); do \
+	  for h in $(CEXE_headers); do \
 	    f=Src/$$d/$$h; \
 	    if test -f "$$f"; then \
 	      install -c -m 644 "$$f" $(amrexIncludeDir); \
@@ -145,7 +98,7 @@ install_headers:
 uninstall_headers:
 	@echo Uninstall headers at $(amrexIncludeDir) ...
 	@for d in $(Pdirs); do \
-	  for h in $(CEXE_headers) $(cEXE_headers); do \
+	  for h in $(CEXE_headers); do \
 	    f=Src/$$d/$$h; \
 	    if test -f "$$f"; then \
 	       $(SILENT) $(RM) $(amrexIncludeDir)/$$h; \
@@ -157,22 +110,6 @@ uninstall_headers:
 	    $(SILENT) rmdir -p --ignore-fail-on-non-empty $(amrexIncludeDir); \
 	fi;
 
-install_fortran_modules:
-	@echo Install Fortran modules at $(amrexIncludeDir) ...
-	@if [ ! -d $(amrexIncludeDir) ]; then mkdir -p $(amrexIncludeDir); fi
-	@for m in $(amrexFortModules); do \
-	    install -c -m 644 "$$m" $(amrexIncludeDir); \
-	done
-
-uninstall_fortran_modules:
-	@echo Uninstall Fortran modules at $(amrexIncludeDir) ...
-	@for m in $(amrexFortModuleFiles); do \
-	    $(SILENT) $(RM) $(amrexIncludeDir)/$$m; \
-	done
-	@if [ -d $(amrexIncludeDir) ]; then \
-	    $(SILENT) rmdir -p --ignore-fail-on-non-empty $(amrexIncludeDir); \
-	fi;
-
 $(objEXETempDir)/amrex.pc: FORCE
 	@echo Generating amrex.pc ...
 	@ $(MKPKGCONFIG) --prefix="$(abspath $(AMREX_INSTALL_DIR))" \
@@ -180,7 +117,6 @@ $(objEXETempDir)/amrex.pc: FORCE
 	                 --cflags="$(CXXFLAGS) $(EXTRACXXFLAGS)" \
 	                 --libs="$(filter-out -L.,$(LDFLAGS)) $(FINAL_LIBS)" \
 	                 --libpriv="" \
-	                 --fflags="$(F90FLAGS)" \
                          > $@
 
 install_pkg_config: $(objEXETempDir)/amrex.pc
@@ -201,8 +137,8 @@ uninstall_pkg_config:
 
 cleanconfig::
 	@echo Cleaning...
-	$(SILENT) $(RM) $(f77EXETempDir)/*.f $(f77EXETempDir)/*.f90 $(f77EXETempDir)/*.F90 $(objEXETempDir)/*.d $(depEXETempDir)/f90.depends
-	$(SILENT) $(RM) $(srcTempDir)/* $(objEXETempDir)/*.o $(objEXETempDir)/*.mod
+	$(SILENT) $(RM) $(objEXETempDir)/*.d
+	$(SILENT) $(RM) $(srcTempDir)/* $(objEXETempDir)/*.o
 	$(SILENT) $(RM) $(tmpEXETempDir)/*
 	$(SILENT) $(RM) *.optrpt $(objEXETempDir)/*.optrpt
 	$(SILENT) $(RM) $(executable)
@@ -213,17 +149,12 @@ clean:: cleanconfig
 	$(SILENT) $(RM) TAGS tags
 	$(SILENT) $(RM) -r $(TMP_BUILD_DIR) *~
 	$(SILENT) $(RM) *.ex *.o
-	$(SILENT) $(RM) *.mod
 	$(SILENT) $(RM) *.ptx
-	$(SILENT) $(RM) BLProfParser.lex.yy.cpp
-	$(SILENT) $(RM) BLProfParser.tab.cpp
-	$(SILENT) $(RM) BLProfParser.tab.H
-	$(SILENT) $(RM) BLProfParserNC.y
 
 realclean:: clean
 
 file_locations:
-	$(AMREX_HOME)/Tools/F_scripts/find_files_vpath.py --vpath "$(FINAL_VPATH_LOCATIONS)" --files "$(CEXE_sources) $(FEXE_sources) $(cEXE_sources) $(fEXE_sources) $(f90EXE_sources) $(F90EXE_sources) $(CEXE_headers) $(cEXE_headers) $(fEXE_headers) $(FEXE_headers)"
+	$(AMREX_HOME)/Tools/F_scripts/find_files_vpath.py --vpath "$(FINAL_VPATH_LOCATIONS)" --files "$(CEXE_sources) $(CEXE_headers)"
 
 
 tags:	$(allSources)
@@ -244,19 +175,7 @@ FORCE:
 $(objEXETempDir)/%.o: %.cpp $(srcTempDir)/AMReX_Config.H $(AUTO_BUILD_SOURCES)
 	@echo Compiling $*.cpp ...
 	@if [ ! -d $(objEXETempDir) ]; then mkdir -p $(objEXETempDir); fi
-ifeq ($(LOG_BUILD_TIME),TRUE)
-	@if [ ! -d $(tmpEXETempDir) ]; then mkdir -p $(tmpEXETempDir); fi
-	@date +"%s" > $(tmpEXETempDir)/$(notdir $<).log
-endif
-ifeq ($(USE_CLANG_TIDY),TRUE)
-# for each word in CLANG_TIDY_IGNORE_SOURCES, check if that word is in the absolute path of the source file
-# if any word matches, the result will be non-empty after stripping whitespace, so clang-tidy won't be run
-	$(if $(strip $(foreach pat,$(CLANG_TIDY_IGNORE_SOURCES),$(findstring $(pat),$(abspath $<)))),,$(SILENT) $(CLANG_TIDY) $(CLANG_TIDY_ARGS) $< -- $(CXXFLAGS) $(EXTRACXXFLAGS) $(CPPFLAGS) $(includes) $(mpicxx_include_dirs))
-endif
 	$(SILENT) $(CCACHE_COMMAND) $(CCACHEFLAGS) $(CXX) $(DEPFLAGS) $(CXXFLAGS) $(EXTRACXXFLAGS) $(CPPFLAGS) $(includes) $(mpicxx_include_dirs) -c $< $(EXE_OUTPUT_OPTION)
-ifeq ($(LOG_BUILD_TIME),TRUE)
-	@date +"%s" >> $(tmpEXETempDir)/$(notdir $<).log
-endif
 
 #
 # Rules for dependencies in bare object files.
