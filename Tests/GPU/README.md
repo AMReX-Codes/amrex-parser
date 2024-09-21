@@ -8,7 +8,7 @@ To compile,
    make -j8 USE_CUDA=TRUE [CUDA_ARCH=70]
 ```
 
-If `CUDA_ARCH` is not set, the default is 70.
+If `CUDA_ARCH` is not set, the default is `70`.
 
 ## AMD GPU
 
@@ -36,7 +36,7 @@ To compile,
    make -j8 USE_CPU=TRUE [COMP=gcc]
 ```
 
-If `COMP` is not set, the default is gcc. Currently available options are
+If `COMP` is not set, the default is `gcc`. Currently available options are
 `gcc`, `clang`, and `intel`. If one needs to specify the path to the
 compiler, below is an example.
 
