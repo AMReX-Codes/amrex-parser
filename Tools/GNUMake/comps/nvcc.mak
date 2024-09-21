@@ -97,7 +97,7 @@ else
   NVCC_ARCH_LINK_FLAGS = $(NVCC_ARCH_FLAGS)
 endif
 
-NVCC_FLAGS = -Wno-deprecated-gpu-targets -m64 -maxrregcount=$(CUDA_MAXREGCOUNT) --expt-relaxed-constexpr --expt-extended-lambda --forward-unknown-to-host-compiler
+NVCC_FLAGS = -Wno-deprecated-gpu-targets -m64 --expt-relaxed-constexpr --expt-extended-lambda --forward-unknown-to-host-compiler
 # This is to work around a bug with nvcc, see: https://github.com/kokkos/kokkos/issues/1473
 NVCC_FLAGS += -Xcudafe --diag_suppress=esa_on_defaulted_function_ignored
 # and another bug related to implicit returns with if constexpr, see: https://stackoverflow.com/questions/64523302/cuda-missing-return-statement-at-end-of-non-void-function-in-constexpr-if-fun

@@ -1,0 +1,16 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# Find dependencies if any
+@amrexpr_FIND_DEPENDENCIES@
+
+include("@PACKAGE_INSTALL_PREFIX@/lib/cmake/amrexpr/amrexprTargets.cmake")
+
+# Set the include directories
+set(amrexpr_INCLUDE_DIRS "@PACKAGE_INCLUDE_INSTALL_DIR@")
+
+# Provide the include directories to consumers
+set_target_properties(amrexpr::amrexpr PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${amrexpr_INCLUDE_DIRS}"
+)
