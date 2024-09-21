@@ -1,4 +1,4 @@
-# AMReX's Mathematical Expression Parser
+# amrexpr: AMReX's Mathematical Expression Parser
 
 ## Overview
 
@@ -8,7 +8,7 @@ is designed for high-performance computing applications that solve partial
 differential equations on block-structured adaptive meshes. This library is
 for users who wish to utilize the parser functionality without incorporating
 the full AMReX framework. It supports both CPU and GPU architectures,
-including Nvidia, AMD, and Intel GPUs.
+including Nvidia, AMD, and Intel GPUs. It requires C++17 or later.
 
 ## Features
 
@@ -64,6 +64,28 @@ Note that an assignment to an automatic variable must be terminated with
 ``;``, and one should avoid name conflict between the local variables and
 the constants set by `setConstant` and the variables registered by
 `registerVariables`.
+
+## Installation
+
+There two ways to install amrexpr.
+
+### Option 1: Using GNU Make
+
+In the `amrexpr` root directory, follow these steps:
+
+```console
+$ ./configure
+$ make -j8
+$ make install
+```
+
+To see the list of options, run `./configure -h`. These options allow you to
+configure installation directory, choose the compiler, specify GPU backends,
+and more.
+
+### Option 2: Using CMake
+
+CMake support is still under development.
 
 ## Copyright Notice
 

@@ -44,7 +44,7 @@ def configure(argv):
     parser.add_argument("--cuda-arch",
                         help="Specify CUDA architecture. Required when CUDA is enabled.")
     parser.add_argument("--amd-arch",
-                        help="Specify AMD GPU architecture. Requried when HIP is enabled.")
+                        help="Specify AMD GPU architecture. Required when HIP is enabled.")
     parser.add_argument("--intel-arch",
                         help="Specify Intel GPU architecture. Optional.")
     args = parser.parse_args()
