@@ -59,9 +59,9 @@ extern int amrexpr_parserdebug;
   enum amrexpr_parsertokentype
   {
     AMREXPR_PARSEREMPTY = -2,
-    AMREXPR_PARSEREOF = 0,           /* "end of file"  */
-    AMREXPR_PARSERerror = 256,       /* error  */
-    AMREXPR_PARSERUNDEF = 257,       /* "invalid token"  */
+    AMREXPR_PARSEREOF = 0,         /* "end of file"  */
+    AMREXPR_PARSERerror = 256,     /* error  */
+    AMREXPR_PARSERUNDEF = 257,     /* "invalid token"  */
     NODE = 258,                    /* NODE  */
     NUMBER = 259,                  /* NUMBER  */
     SYMBOL = 260,                  /* SYMBOL  */
