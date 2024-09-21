@@ -173,8 +173,6 @@ ifeq ($(USE_HIP),TRUE)
 else ifeq ($(USE_CUDA),TRUE)
   ifdef NVCC_HOST_COMP
     AMREX_CCOMP = $(NVCC_HOST_COMP)
-  else ifeq ($(COMP),cray)
-    AMREX_CCOMP = cray
   else
     AMREX_CCOMP = gnu
   endif
