@@ -26,4 +26,4 @@ jobs:
         which nvcc || echo "nvcc not in PATH!"
 
         cd Tests/GPU
-        make -j4 USE_CUDA=TRUE
+        make -j4 USE_CUDA=TRUE CUDA_ARCH=80

@@ -75,9 +75,6 @@ else
 endif
 
 ifeq ($(USE_CUDA),TRUE)
-  # Set the default CUDA architecture version.
-  CUDA_ARCH ?= 70
-
   # Link-time optimization
   CUDA_LTO ?= FALSE
 
@@ -366,6 +363,12 @@ else ifeq ($(USE_CUDA),TRUE)
 
     ifdef AMREX_CUDA_ARCH
       CUDA_ARCH = $(AMREX_CUDA_ARCH)
+    endif
+
+    ifeq ($(MAKECMDGOALS),)
+    ifeq ($(CUDA_ARCH),)
+      $(error Must set CUDA_ARCH)
+    endif
     endif
 
     # remove dot in 7.0 if there is

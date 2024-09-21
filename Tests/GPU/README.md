@@ -5,10 +5,12 @@ This test works on both GPUs and CPUs.
 To compile,
 
 ```
-   make -j8 USE_CUDA=TRUE [CUDA_ARCH=70]
+   make -j8 USE_CUDA=TRUE CUDA_ARCH=NN
 ```
 
-If `CUDA_ARCH` is not set, the default is `70`.
+Here `NN` is something like `80`. You can run
+`nvidia-smi --query-gpu=compute_cap --format=csv,noheader`
+to find out the compute capability of your GPU.
 
 ## AMD GPU
 
