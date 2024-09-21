@@ -1,5 +1,5 @@
-#ifndef BL_TYPETRAITS_H_
-#define BL_TYPETRAITS_H_
+#ifndef AMREXPR_TYPETRAITS_H_
+#define AMREXPR_TYPETRAITS_H_
 #include "amrexpr_Config.H"
 
 #include <type_traits>
