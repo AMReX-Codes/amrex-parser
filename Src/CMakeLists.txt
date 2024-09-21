@@ -1,0 +1,31 @@
+
+target_sources(amrexpr
+    PRIVATE
+    amrexpr.hpp
+    amrexpr_Arena.H
+    amrexpr_BLassert.H
+    amrexpr_Extension.H
+    amrexpr_Gpu.H
+    amrexpr_IOFormat.H
+    amrexpr_Math.H
+    amrexpr_Parser_Exe.H
+    amrexpr_Parser.H
+    amrexpr_parser.lex.h
+    amrexpr_parser.lex.nolint.H
+    amrexpr_parser.tab.h
+    amrexpr_parser.tab.nolint.H
+    amrexpr_Parser_Y.H
+    amrexpr_REAL.H
+    amrexpr_Stack.H
+    amrexpr_TypeTraits.H
+    amrexpr_Utility.H
+    amrexpr_Arena.cpp
+    amrexpr_BLassert.cpp
+    amrexpr_Gpu.cpp
+    amrexpr_Parser.cpp
+    amrexpr_Parser_Exe.cpp
+    amrexpr_parser.lex.cpp
+    amrexpr_parser.tab.cpp
+    amrexpr_Parser_Y.cpp
+    amrexpr_Utility.cpp
+)

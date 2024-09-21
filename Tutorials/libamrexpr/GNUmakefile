@@ -1,4 +1,4 @@
-AMREXPR_ROOT = ../../tmp_install_dir
+AMREXPR_ROOT ?= ../../tmp_install_dir
 
 CXX = g++
 CXXFLAGS = -std=c++17 -O3 -g1 -I$(AMREXPR_ROOT)/include

@@ -59,13 +59,6 @@
 
 #endif /* force inline */
 
-
-#ifdef AMREXPR_USE_FORCE_INLINE
-#define AMREXPR_INLINE AMREXPR_FORCE_INLINE
-#else
-#define AMREXPR_INLINE inline
-#endif
-
 // no inline
 #if defined(_MSC_VER)
 #define AMREXPR_NO_INLINE __declspec(noinline)
@@ -84,10 +77,6 @@
 #define AMREXPR_FLATTEN
 #endif
 
-#ifdef AMREXPR_USE_FLATTEN_FOR
 #define AMREXPR_ATTRIBUTE_FLATTEN_FOR AMREXPR_FLATTEN
-#else
-#define AMREXPR_ATTRIBUTE_FLATTEN_FOR
-#endif
 
 #endif

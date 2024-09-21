@@ -227,7 +227,6 @@ CXXFLAGS += $(XTRA_CXXFLAGS)
 CPPFLAGS += $(XTRA_CPPFLAGS)
 
 ifeq ($(DEBUG),TRUE)
-    CPPFLAGS	+= -DAMREXPR_DEBUG
     DebugSuffix := .DEBUG
 else
     DebugSuffix :=
