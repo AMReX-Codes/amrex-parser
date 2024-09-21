@@ -25,6 +25,10 @@ jobs:
         make -j4 COMP=clang
         ./main.llvm.ex
 
+        cd ../Parser2
+        make -j4 COMP=clang
+        ./main.llvm.ex
+
         cd ../GPU
         make -j4 USE_CPU=TRUE COMP=clang
         ./main.llvm.ex

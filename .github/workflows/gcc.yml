@@ -25,6 +25,10 @@ jobs:
         make -j4
         ./main.gnu.ex
 
+        cd ../Parser2
+        make -j4
+        ./main.gnu.ex
+
         cd ../GPU
         make -j4 USE_CPU=TRUE
         ./main.gnu.ex

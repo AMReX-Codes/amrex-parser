@@ -29,6 +29,10 @@ jobs:
         make -j4 COMP=intel
         ./main.intel.ex
 
+        cd ../Parser2
+        make -j4 COMP=intel
+        ./main.intel.ex
+
         cd ../GPU
         make -j4 USE_CPU=TRUE COMP=intel
         ./main.intel.ex
