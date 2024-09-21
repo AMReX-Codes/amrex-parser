@@ -17,7 +17,7 @@ void* allocate_host (std::size_t sz)
                                       hipHostMallocNonCoherent));
     return p;
 #elif defined(AMREX_USE_SYCL)
-    return sycl::malloc_host(...);
+    return sycl::malloc_host(sz, *Gpu::getSyclContext());
 #else
     return std::malloc(sz);
 #endif
@@ -30,7 +30,7 @@ void free_host (void* pt)
 #elif defined(AMREX_USE_HIP)
     AMREX_HIP_SAFE_CALL(hipHostFree(pt));
 #elif defined(AMREX_USE_SYCL)
-    sycl::free(...);
+    sycl::free(pt, *Gpu::getSyclContext());
 #else
     std::free(pt);
 #endif
@@ -44,7 +44,7 @@ void* allocate_device (std::size_t sz)
 #elif defined(AMREX_USE_HIP)
     AMREX_HIP_SAFE_CALL(hipMalloc(&p, sz));
 #elif defined(AMREX_USE_SYCL)
-    p = sycl::malloc_device(...);
+    p = sycl::malloc_device(sz, *Gpu::getSyclDevice(), *Gpu::getSyclContext());
 #else
     p = std::malloc(sz);
 #endif
@@ -58,7 +58,7 @@ void free_device (void* pt)
 #elif defined(AMREX_USE_HIP)
     AMREX_HIP_SAFE_CALL(hipFree(pt));
 #elif defined(AMREX_USE_SYCL)
-    sycl::free(...);
+    sycl::free(pt, *Gpu::getSyclContext());
 #else
     std::free(pt);
 #endif

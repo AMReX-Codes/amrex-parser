@@ -30,8 +30,6 @@ endif
 ifeq ($(USE_SYCL),TRUE)
   override COMP = sycl
   DEFINES += -DAMREX_USE_SYCL
-  SYCL_SUB_GROUP_SIZE ?= 32
-  DEFINES += -DAMREX_SYCL_SUB_GROUP_SIZE=$(SYCL_SUB_GROUP_SIZE)
   USE_GPU := TRUE
   USE_CUDA := FALSE
   USE_HIP := FALSE
@@ -270,12 +268,6 @@ endif
 
 ifeq ($(USE_GPU),TRUE)
     DEFINES += -DAMREX_USE_GPU
-    ifeq ($(GPU_ERROR_CHECK),FALSE)
-        DEFINES += -DAMREX_GPU_NO_ERROR_CHECK
-    endif
-    ifeq ($(USE_GPU_RDC),TRUE)
-        DEFINES += -DAMREX_USE_GPU_RDC
-    endif
 endif
 
 ifeq ($(PRECISION),FLOAT)

@@ -11,6 +11,14 @@ int main (int argc, char* argv[])
 {
     amrex::ignore_unused(argc, argv);
 
+#ifdef AMREX_USE_SYCL
+    sycl::device sycl_device(sycl::gpu_selector_v);
+    sycl::context sycl_context(sycl_device);
+    sycl::queue sycl_queue(sycl_context, sycl_device,
+                           sycl::property_list{sycl::property::queue::in_order{}});
+    amrex::Gpu::init_sycl(sycl_device, sycl_context, sycl_queue);
+#endif
+
     std::size_t N = 256*256*256*8;
     auto* p = (double*)allocate_device(N*sizeof(double));
 

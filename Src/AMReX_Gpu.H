@@ -106,6 +106,12 @@ namespace Gpu {
     void htod_memcpy (void* p_d, void const* p_h, std::size_t sz);
 
     void streamSynchronize ();
+
+#if defined (AMREX_USE_SYCL)
+    void init_sycl (sycl::device& d, sycl::context& c, sycl::queue& q);
+    sycl::device* getSyclDevice ();
+    sycl::context* getSyclContext ();
+#endif
 }
 
 #if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
@@ -123,6 +129,27 @@ void ParallelFor (T n, L const& f)
             auto i = T(blockDim.x*blockIdx.x+threadIdx.x);
             if (i < n) { f(i); }
         });
+}
+
+#elif defined(AMREX_USE_SYCL)
+
+template <typename T, typename L, typename M=std::enable_if_t<std::is_integral_v<T>> >
+void ParallelFor (T n, L const& f)
+{
+    if (n <= 0) { return; }
+
+    auto& q = *Gpu::getStream();
+    try {
+        q.submit([&] (sycl::handler& h) {
+            h.parallel_for(sycl::range<1>(n),
+                           [=] (sycl::item<1> item)
+            {
+                f(T(item.get_linear_id()));
+            });
+        });
+    } catch (sycl::exception const& e) {
+        throw std::runtime_error(std::string("ParallelFor: ")+e.what());
+    }
 }
 
 #endif
