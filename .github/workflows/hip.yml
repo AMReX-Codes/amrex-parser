@@ -25,4 +25,5 @@ jobs:
         hipcc --version
 
         cd Tests/GPU
-        make -j4 USE_HIP=TRUE
+        make -j4 USE_HIP=TRUE AMD_ARCH=gfx90a
+
