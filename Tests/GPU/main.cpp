@@ -4,14 +4,15 @@
 
 using namespace amrex;
 
-#if defined(AMREX_USE_GPU)
-#endif
-
 int main (int argc, char* argv[])
 {
     amrex::ignore_unused(argc, argv);
 
-#ifdef AMREX_USE_SYCL
+#if defined(AMREX_USE_CUDA)
+    AMREX_CUDA_SAFE_CALL(cudaSetDevice(0));
+#elif defined(AMREX_USE_HIP)
+    AMREX_HIP_SAFE_CALL(hipSetDevice(0));
+#elif defined(AMREX_USE_SYCL)
     sycl::device sycl_device(sycl::gpu_selector_v);
     sycl::context sycl_context(sycl_device);
     sycl::queue sycl_queue(sycl_context, sycl_device,
