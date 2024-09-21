@@ -7,24 +7,8 @@ def configure(argv):
     argv[0] = "configure" # So the help message print it
     parser = argparse.ArgumentParser()
     parser.add_argument("--prefix",
-                        help="Install libamrexpr, headers and Fortran modules in PREFIX directory [default=tmp_install_dir]",
+                        help="Install libamrexpr and headers in PREFIX directory [default=tmp_install_dir]",
                         default="tmp_install_dir")
-    parser.add_argument("--dim",
-                        help="Dimension [default=3]",
-                        choices=['1','2','3'],
-                        default="3")
-    parser.add_argument("--with-fortran",
-                        help="Use Fortran [default=yes]",
-                        choices=["yes","no"],
-                        default="yes")
-    parser.add_argument("--with-mpi",
-                        help="Use MPI [default=yes]",
-                        choices=["yes","no"],
-                        default="yes")
-    parser.add_argument("--with-omp",
-                        help="Use OpenMP [default=no]",
-                        choices=["yes","no"],
-                        default="no")
     parser.add_argument("--with-cuda",
                         help="Use CUDA [default=no]",
                         choices=["yes","no"],
@@ -37,72 +21,20 @@ def configure(argv):
                         help="Use SYCL [default=no]",
                         choices=["yes","no"],
                         default="no")
-    parser.add_argument("--with-acc",
-                        help="Use OpenACC [default=no]",
-                        choices=["yes","no"],
-                        default="no")
     parser.add_argument("--comp",
                         help="Compiler [default=gnu]",
-                        choices=["gnu","intel","intel-llvm","intel-classic","cray","pgi","llvm","nag","nec","ibm","armclang"],
+                        choices=["gnu","intel","llvm"],
                         default="gnu")
     parser.add_argument("--debug",
                         help="Debug build [default=no]",
-                        choices=["yes","no"],
-                        default="no")
-    parser.add_argument("--enable-particle",
-                        help="Enable amrexpr particle classes [default=yes]",
-                        choices=["yes","no"],
-                        default="yes")
-    parser.add_argument("--enable-fortran-api",
-                        help="Enable amrexpr Fortran API [default=yes]",
-                        choices=["yes","no"],
-                        default="yes")
-    parser.add_argument("--enable-linear-solver",
-                        help="Enable amrexpr linear solvers [default=yes]",
-                        choices=["yes","no"],
-                        default="yes")
-    parser.add_argument("--enable-hypre",
-                        help="Enable Hypre as an option for bottom solver of amrexpr linear solvers [default=no]",
-                        choices=["yes","no"],
-                        default="no")
-    parser.add_argument("--enable-petsc",
-                        help="Enable PETSc as an option for bottom solver of amrexpr linear solvers [default=no]",
-                        choices=["yes","no"],
-                        default="no")
-    parser.add_argument("--enable-eb",
-                        help="Enable amrexpr embedded boundary capability [default=no]",
                         choices=["yes","no"],
                         default="no")
     parser.add_argument("--single-precision",
                         help="Define amrexpr::Real as float [default=no (i.e., double)]",
                         choices=["yes","no"],
                         default="no")
-    parser.add_argument("--single-precision-particles",
-                        help="Define amrexpr::ParticleReal as float [default=no (i.e., double)]",
-                        choices=["yes","no"],
-                        default="no")
-    parser.add_argument("--enable-xsdk-defaults",
-                        help="Enable XSDK mode [default=no]",
-                        choices=["yes","no"],
-                        default="no")
     parser.add_argument("--allow-different-compiler",
                         help="Allow an application to use a different compiler than the one used to build libamrexpr [default=no]",
-                        choices=["yes","no"],
-                        default="no")
-    parser.add_argument("--with-sensei-insitu",
-                        help="Enables the SENSEI in situ integration. [default=no]",
-                        choices=["yes","no"],
-                        default="no")
-    parser.add_argument("--sensei-amr-inst",
-                        help="Enables the SENSEI instrumentation in amrexpr::Amr. [default=yes]",
-                        choices=["yes","no"],
-                        default="yes")
-    parser.add_argument("--with-omp-offload",
-                        help="Use OpenMP-offload [default=no]",
-                        choices=["yes","no"],
-                        default="no")
-    parser.add_argument("--enable-tiny-profile",
-                        help="Enable tiny profile [default=no]",
                         choices=["yes","no"],
                         default="no")
     parser.add_argument("--enable-pic",
@@ -110,55 +42,31 @@ def configure(argv):
                         choices=["yes","no"],
                         default="no")
     parser.add_argument("--cuda-arch",
-                        help="Specify CUDA architecture [default=70]",
-                        default="70")
-    parser.add_argument("--enable-probinit",
-                        help="Only relevant to Amr/AmrLevel based codes that need to read probin file or call amrexpr_probinit",
-                        choices=["yes","no"],
-                        default="yes")
-    parser.add_argument("--enable-bittree",
-                        help="Enable Bittree mode [default=no]",
-                        choices=["yes","no"],
-                        default="no")
+                        help="Specify CUDA architecture. Required when CUDA is enabled.")
+    parser.add_argument("--amd-arch",
+                        help="Specify AMD GPU architecture. Requried when HIP is enabled.")
+    parser.add_argument("--intel-arch",
+                        help="Specify Intel GPU architecture. Optional.")
     args = parser.parse_args()
-
-    if args.with_fortran == "no":
-        args.enable_fortran_api = "no";
-        if args.enable_hypre == "yes":
-            sys.exit("ERROR: must have --with-fortran=yes to use hypre")
-        if args.enable_petsc == "yes":
-            sys.exit("ERROR: must have --with-fortran=yes to use petsc")
 
     f = open("GNUmakefile","w")
     f.write("AMREXPR_INSTALL_DIR = " + args.prefix.strip() + "\n")
-    f.write("DIM = " + args.dim.strip() + "\n")
-    f.write("BL_NO_FORT = {}\n".format("TRUE" if args.with_fortran == "no" else "FALSE"))
-    f.write("USE_MPI = {}\n".format("FALSE" if args.with_mpi == "no" else "TRUE"))
-    f.write("USE_OMP = {}\n".format("FALSE" if args.with_omp == "no" else "TRUE"))
     f.write("USE_CUDA = {}\n".format("FALSE" if args.with_cuda == "no" else "TRUE"))
     f.write("USE_HIP = {}\n".format("FALSE" if args.with_hip == "no" else "TRUE"))
     f.write("USE_SYCL = {}\n".format("FALSE" if args.with_sycl == "no" else "TRUE"))
-    f.write("USE_ACC = {}\n".format("FALSE" if args.with_acc == "no" else "TRUE"))
     f.write("COMP = " + args.comp.strip() + "\n")
     f.write("DEBUG = {}\n".format("TRUE" if args.debug == "yes" else "FALSE"))
-    f.write("USE_PARTICLES = {}\n".format("FALSE" if args.enable_particle == "no" else "TRUE"))
-    f.write("USE_FORTRAN_INTERFACE = {}\n".format("FALSE" if args.enable_fortran_api == "no" else "TRUE"))
-    f.write("USE_LINEAR_SOLVERS = {}\n".format("FALSE" if args.enable_linear_solver == "no" else "TRUE"))
-    f.write("USE_HYPRE = {}\n".format("TRUE" if args.enable_hypre == "yes" else "FALSE"))
-    f.write("USE_PETSC = {}\n".format("TRUE" if args.enable_petsc == "yes" else "FALSE"))
-    f.write("USE_EB = {}\n".format("TRUE" if args.enable_eb == "yes" else "FALSE"))
     f.write("PRECISION = {}\n".format("FLOAT" if args.single_precision == "yes" else "DOUBLE"))
-    f.write("USE_SINGLE_PRECISION_PARTICLES = {}\n".format("TRUE" if args.single_precision_particles == "yes" else "FALSE"))
-    f.write("AMREXPR_XSDK = {}\n".format("TRUE" if args.enable_xsdk_defaults == "yes" else "FALSE"))
     f.write("ALLOW_DIFFERENT_COMP = {}\n".format("FALSE" if args.allow_different_compiler == "no" else "TRUE"))
-    f.write("USE_SENSEI_INSITU = {}\n".format("FALSE" if args.with_sensei_insitu == "no" else "TRUE"))
-    f.write("NO_SENSEI_AMR_INST = {}\n".format("FALSE" if args.sensei_amr_inst == "yes" else "TRUE"))
-    f.write("USE_OMP_OFFLOAD = {}\n".format("FALSE" if args.with_omp_offload == "no" else "TRUE"))
-    f.write("TINY_PROFILE = {}\n".format("FALSE" if args.enable_tiny_profile == "no" else "TRUE"))
     f.write("USE_COMPILE_PIC = {}\n".format("FALSE" if args.enable_pic == "no" else "TRUE"))
-    f.write("CUDA_ARCH = " + args.cuda_arch.strip() + "\n")
-    f.write("AMREXPR_NO_PROBINIT = {}\n".format("TRUE" if args.enable_probinit == "no" else "FALSE"))
-    f.write("USE_BITTREE = {}\n".format("TRUE" if args.enable_bittree == "yes" else "FALSE"))
+    if args.with_cuda == "yes":
+        f.write("CUDA_ARCH = " + args.cuda_arch.strip() + "\n")
+    if args.with_hip == "yes":
+        f.write("AMD_ARCH = " + args.amd_arch.strip() + "\n")
+    if args.with_sycl == "yes":
+        if args.intel_arch:
+            f.write("INTEL_ARCH = " + args.intel_arch.strip() + "\n")
+
     f.write("\n")
 
     fin = open("GNUmakefile.in","r")

@@ -1,0 +1,25 @@
+
+AMREXPR_HOME := $(shell pwd)
+
+Pdirs := .
+include $(AMREXPR_HOME)/Tools/GNUMake/Make.defs
+
+ifeq ($(USE_CUDA),TRUE)
+  ALLOW_DIFFERENT_COMP = TRUE
+endif
+
+include $(AMREXPR_HOME)/Src/Make.package
+
+all: $(amrexprlib)
+	@echo SUCCESS
+
+.PHONY: distclean install uninstall
+
+distclean: realclean
+	$(SILENT) $(RM) GNUmakefile
+
+install: install_lib install_headers install_pkg_config
+
+uninstall: uninstall_lib uninstall_headers uninstall_pkg_config distclean
+
+include $(AMREXPR_HOME)/Tools/GNUMake/Make.rules

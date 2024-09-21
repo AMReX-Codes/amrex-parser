@@ -150,6 +150,11 @@ ALLOW_DIFFERENT_COMP ?= TRUE
 SKIP_LINKING ?= FALSE
 USE_COMPILE_PIC ?= FALSE
 
+AMREXPR_GIT_VERSION := $(shell cd $(AMREXPR_HOME); git describe --abbrev=12 --dirty --always --tags)
+ifndef AMREXPR_GIT_VERSION
+  AMREXPR_GIT_VERSION := Unknown
+endif
+
 MKCONFIG        = $(AMREXPR_HOME)/Tools/libamrexpr/mkconfig.py
 MKPKGCONFIG     = $(AMREXPR_HOME)/Tools/libamrexpr/mkpkgconfig.py
 

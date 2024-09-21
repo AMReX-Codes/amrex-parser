@@ -2,15 +2,13 @@
 
 import argparse
 
-def doit(prefix, version, cflags, libs, libpriv, fflags):
+def doit(prefix, version, cflags, libs, libpriv):
     print("# amrexpr Version: "+version)
     print("")
     print("prefix="+prefix)
     print("exec_prefix=${prefix}")
     print("libdir=${prefix}/lib")
     print("includedir=${prefix}/include")
-    print("")
-    print("fflags="+fflags);
     print("")
     print("Name: amrexpr")
     print("Description: AMReX's Math Expression Parser")
@@ -39,14 +37,11 @@ if __name__ == "__main__":
     parser.add_argument("--libpriv",
                         help="libpriv",
                         default="")
-    parser.add_argument("--fflags",
-                        help="fflags",
-                        default="")
     args = parser.parse_args()
 
     try:
         doit(prefix=args.prefix, version=args.version, cflags=args.cflags,
-             libs=args.libs, libpriv=args.libpriv, fflags=args.fflags)
+             libs=args.libs, libpriv=args.libpriv)
     except:
         # something went wrong
         print("$(error something went wrong in mkpkgconfig.py)")

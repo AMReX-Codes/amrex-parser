@@ -167,7 +167,7 @@ TAGS:	$(allSources)
 
 FORCE:
 
-.PHONY:	all cleanconfig clean realclean file_locations tags TAGS install_lib install_headers install_fortran_modules install_pkg_config
+.PHONY:	all cleanconfig clean realclean file_locations tags TAGS install_lib install_headers install_pkg_config
 
 #
 # Rules for objects.

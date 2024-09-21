@@ -28,36 +28,15 @@ def doit(defines, undefines, comp, allow_diff_comp):
     print("#ifdef __cplusplus");
 
     if allow_diff_comp == "FALSE":
-        if comp == "gnu" or comp == "nag":
+        if comp == "gnu":
             comp_macro = "__GNUC__"
             comp_id    = "GNU"
-        elif comp == "intel" or comp == "intel-classic":
+        elif comp == "intel":
             comp_macro = "__INTEL_COMPILER"
             comp_id    = "Intel"
-        elif comp == "intel-llvm":
-            comp_macro = "__INTEL_LLVM_COMPILER"
-            comp_id    = "Intel"
-        elif comp == "cray":
-            comp_macro = "_CRAYC"
-            comp_id    = "Cray"
-        elif comp == "pgi":
-            comp_macro = "__PGI"
-            comp_id    = "PGI"
-        elif comp == "nvhpc":
-            comp_macro = "__NVCOMPILER"
-            comp_id    = "NVHPC"
         elif comp == "llvm":
             comp_macro = "__llvm__"
             comp_id    = "Clang/LLVM"
-        elif comp == "nec":
-            comp_macro = "__NEC__"
-            comp_id    = "NEC"
-        elif comp == "ibm":
-            comp_macro = "__ibmxl__"
-            comp_id    = "IBM"
-        elif comp == "armclang":
-            comp_macro = "__armclang_version__"
-            comp_id    = "ArmClang"
         elif comp == "hip":
             comp_macro = "__HIP__"
             comp_id    = "HIP"
@@ -75,12 +54,6 @@ def doit(defines, undefines, comp, allow_diff_comp):
 
     print("#endif") #  ifdef __cplusplus
 
-    # hipcc does not necessarily set the _OPENMP macro
-    # https://rocmdocs.amd.com/en/latest/Programming_Guides/HIP-FAQ.html?highlight=_openmp#openmp-is-undefined-when-compiling-with-fopenmp
-    print("#if defined(AMREXPR_USE_OMP) && !defined(_OPENMP) && !defined(AMREXPR_USE_HIP)")
-    print('#error libamrexpr was built with OpenMP')
-    print("#endif")
-
     print("#endif")
 
 if __name__ == "__main__":
@@ -94,8 +67,7 @@ if __name__ == "__main__":
                         default="")
     parser.add_argument("--comp",
                         help="compiler",
-                        choices=["gnu","intel","intel-llvm","intel-classic","cray","pgi","nvhpc","llvm","nag","nec","ibm",
-                                 "armclang","hip","sycl"])
+                        choices=["gnu","intel","llvm","hip","sycl"])
     parser.add_argument("--allow-different-compiler",
                         help="allow an application to use a different compiler than the one used to build libamrexpr",
                         choices=["TRUE","FALSE"])

@@ -1,3 +1,4 @@
+CEXE_headers += amrexpr.hpp
 
 CEXE_headers += amrexpr_Arena.H \
                 amrexpr_BLassert.H \
