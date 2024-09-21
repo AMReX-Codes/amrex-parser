@@ -7,7 +7,7 @@ on:
     - cron: "22 22 * * 6"
 
 concurrency:
-  group: ${{ github.ref }}-${{ github.head_ref }}-cuda
+  group: ${{ github.ref }}-${{ github.head_ref }}-sycl
   cancel-in-progress: true
 
 jobs:
