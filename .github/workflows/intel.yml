@@ -36,3 +36,28 @@ jobs:
         cd ../GPU
         make -j4 USE_CPU=TRUE COMP=intel
         ./main.intel.ex
+
+  Tutorials:
+    name: Clang libamrexpr
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_dpcpp.sh
+    - name: Build libamrexpr
+      run: |
+        set +e
+        source /opt/intel/oneapi/setvars.sh
+        set -e
+        ./configure --comp intel
+        make -j4
+        make install
+    - name: Run
+      run: |
+        set +e
+        source /opt/intel/oneapi/setvars.sh
+        set -e
+        cd Tutorials/libamrexpr
+        make -j4 CXX=icpx
+        ./a.out

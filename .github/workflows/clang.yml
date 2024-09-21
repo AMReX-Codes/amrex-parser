@@ -32,3 +32,22 @@ jobs:
         cd ../GPU
         make -j4 USE_CPU=TRUE COMP=clang
         ./main.llvm.ex
+
+  Tutorials:
+    name: Clang libamrexpr
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_clang.sh
+    - name: Build libamrexpr
+      run: |
+        ./configure --comp llvm
+        make -j4
+        make install
+    - name: Run
+      run: |
+        cd Tutorials/libamrexpr
+        make -j4 CXX=clang++
+        ./a.out

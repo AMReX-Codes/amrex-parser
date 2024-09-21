@@ -67,7 +67,8 @@ the constants set by `setConstant` and the variables registered by
 
 ## Installation
 
-There two ways to install amrexpr.
+There two ways to install `amrexpr`. A simple example demonstrating the use
+of `libamrexpr` is available at `amrexpr/Tutorials/libamrexpr`.
 
 ### Option 1: Using GNU Make
 
