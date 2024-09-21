@@ -69,8 +69,6 @@ int main (int argc, char* argv[])
         for (auto const& ie : failed_tests) {
             std::cout << "  case " << ie.first << ": " << ie.second << "\n";
         }
+        return EXIT_FAILURE;
     }
-
-    // return EXIT_SUCCESS;
-    return EXIT_FAILURE;
 }
