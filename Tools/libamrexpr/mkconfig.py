@@ -32,7 +32,7 @@ def doit(defines, undefines, comp, allow_diff_comp):
             comp_macro = "__GNUC__"
             comp_id    = "GNU"
         elif comp == "intel":
-            comp_macro = "__INTEL_COMPILER"
+            comp_macro = "__INTEL_LLVM_COMPILER"
             comp_id    = "Intel"
         elif comp == "llvm":
             comp_macro = "__llvm__"

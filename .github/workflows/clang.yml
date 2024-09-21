@@ -34,7 +34,7 @@ jobs:
         ./main.llvm.ex
 
   Tutorials:
-    name: Clang libamrexpr
+    name: Clang libamrexpr & GNU Make
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4

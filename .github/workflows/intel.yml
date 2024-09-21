@@ -38,7 +38,7 @@ jobs:
         ./main.intel.ex
 
   Tutorials:
-    name: Clang libamrexpr
+    name: Intel libamrexpr & GNU Make
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
