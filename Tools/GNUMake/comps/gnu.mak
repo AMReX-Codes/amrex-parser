@@ -2,8 +2,8 @@ GNU_DOT_MAK_INCLUDED = TRUE
 
 ########################################################################
 
-ifndef AMREX_CCOMP
-  AMREX_CCOMP = gnu
+ifndef AMREXPR_CCOMP
+  AMREXPR_CCOMP = gnu
 endif
 
 ########################################################################
@@ -28,12 +28,6 @@ COMP_VERSION = $(gcc_version)
 
 GENERIC_GNU_FLAGS =
 
-ifeq ($(EXPORT_DYNAMIC),TRUE)
-  CPPFLAGS += -DAMREX_EXPORT_DYNAMIC
-  LIBRARIES += -ldl
-  GENERIC_GNU_FLAGS += -rdynamic -fno-omit-frame-pointer
-endif
-
 gcc_major_ge_8 = $(shell expr $(gcc_major_version) \>= 8)
 gcc_major_ge_9 = $(shell expr $(gcc_major_version) \>= 9)
 gcc_major_ge_10 = $(shell expr $(gcc_major_version) \>= 10)
@@ -57,15 +51,11 @@ ifeq ($(FSANITIZER),TRUE)
   GENERIC_GNU_FLAGS += -fsanitize=builtin -fsanitize=pointer-overflow
 endif
 
-ifeq ($(USE_OMP),TRUE)
-  GENERIC_GNU_FLAGS += -fopenmp
-endif
-
 ########################################################################
 ########################################################################
 ########################################################################
 
-ifeq ($(AMREX_CCOMP),gnu)
+ifeq ($(AMREXPR_CCOMP),gnu)
 
 CXX = g++
 
@@ -137,4 +127,4 @@ endif
 
 CXXFLAGS += $(GENERIC_GNU_FLAGS) -pthread
 
-endif # AMREX_CCOMP == gnu
+endif # AMREXPR_CCOMP == gnu

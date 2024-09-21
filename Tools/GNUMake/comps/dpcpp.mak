@@ -3,8 +3,8 @@
 #
 CXX = icpx
 
-amrex_oneapi_version = $(shell $(CXX) --version | head -1)
-$(info oneAPI version: $(amrex_oneapi_version))
+amrexpr_oneapi_version = $(shell $(CXX) --version | head -1)
+$(info oneAPI version: $(amrexpr_oneapi_version))
 
 CXXFLAGS =
 
@@ -78,30 +78,30 @@ LDFLAGS += -fsycl-max-parallel-link-jobs=$(SYCL_PARALLEL_LINK_JOBS)
 endif
 
 ifeq ($(SYCL_AOT),TRUE)
-  ifndef AMREX_INTEL_ARCH
+  ifndef AMREXPR_INTEL_ARCH
     ifdef INTEL_ARCH
-      AMREX_INTEL_ARCH = $(INTEL_ARCH)
+      AMREXPR_INTEL_ARCH = $(INTEL_ARCH)
     endif
   endif
-  ifdef AMREX_INTEL_ARCH
-    amrex_intel_gpu_target = $(AMREX_INTEL_ARCH)
+  ifdef AMREXPR_INTEL_ARCH
+    amrexpr_intel_gpu_target = $(AMREXPR_INTEL_ARCH)
   else
-    # amrex_intel_gpu_target = *
-    $(error Either INTEL_ARCH or AMREX_INTEL_ARCH must be specified when SYCL_AOT is TRUE.)
+    # amrexpr_intel_gpu_target = *
+    $(error Either INTEL_ARCH or AMREXPR_INTEL_ARCH must be specified when SYCL_AOT is TRUE.)
   endif
   CXXFLAGS += -fsycl-targets=spir64_gen
-  amrex_sycl_backend_flags = -device $(amrex_intel_gpu_target)
+  amrexpr_sycl_backend_flags = -device $(amrexpr_intel_gpu_target)
   SYCL_AOT_GRF_MODE ?= Default
   ifneq ($(SYCL_AOT_GRF_MODE),Default)
     ifeq ($(SYCL_AOT_GRF_MODE),Large)
-      amrex_sycl_backend_flags += -internal_options -ze-opt-large-register-file
+      amrexpr_sycl_backend_flags += -internal_options -ze-opt-large-register-file
     else ifeq ($(SYCL_AOT_GRF_MODE),AutoLarge)
-      amrex_sycl_backend_flags += -options -ze-intel-enable-auto-large-GRF-mode
+      amrexpr_sycl_backend_flags += -options -ze-intel-enable-auto-large-GRF-mode
     else
       $(error SYCL_AOT_GRF_MODE ($(SYCL_AOT_GRF_MODE)) must be either Default, Large, or AutoLarge)
     endif
   endif
-  LDFLAGS += -Xsycl-target-backend '$(amrex_sycl_backend_flags)'
+  LDFLAGS += -Xsycl-target-backend '$(amrexpr_sycl_backend_flags)'
 endif
 
 ifeq ($(DEBUG),TRUE)
@@ -109,4 +109,4 @@ ifeq ($(DEBUG),TRUE)
   LDFLAGS += -fsycl-link-huge-device-code
 endif
 
-AMREX_CCACHE_ENV = CCACHE_DEPEND=1
+AMREXPR_CCACHE_ENV = CCACHE_DEPEND=1

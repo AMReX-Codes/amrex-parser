@@ -1,4 +1,4 @@
-AMREX_HOME := ../..
+AMREXPR_HOME := ../..
 
 DEBUG	= FALSE
 
@@ -10,12 +10,12 @@ USE_CUDA  = FALSE
 USE_HIP   = FALSE
 USE_SYCL  = FALSE
 
-include $(AMREX_HOME)/Tools/GNUMake/Make.defs
+include $(AMREXPR_HOME)/Tools/GNUMake/Make.defs
 
 ifeq ($(COMP),intel)
   CXXFLAGS += -fp-model=precise # otherwise Test 10 fails
 endif
 
 include ./Make.package
-include $(AMREX_HOME)/Src/Make.package
-include $(AMREX_HOME)/Tools/GNUMake/Make.rules
+include $(AMREXPR_HOME)/Src/Make.package
+include $(AMREXPR_HOME)/Tools/GNUMake/Make.rules

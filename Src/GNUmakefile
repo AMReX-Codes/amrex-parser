@@ -1,3 +1,3 @@
 default:
-	bison --no-lines --defines=amrex_parser.tab.h --output=amrex_parser.tab.nolint.H amrex_parser.y
-	flex --noline --header-file=amrex_parser.lex.h --outfile=amrex_parser.lex.nolint.H amrex_parser.l
+	bison --no-lines --defines=amrexpr_parser.tab.h --output=amrexpr_parser.tab.nolint.H amrexpr_parser.y
+	flex --noline --header-file=amrexpr_parser.lex.h --outfile=amrexpr_parser.lex.nolint.H amrexpr_parser.l

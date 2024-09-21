@@ -55,19 +55,11 @@ CXXFLAGS += -std=$(CXXSTD)
 
 ########################################################################
 
-GENERIC_COMP_FLAGS =
-
-ifeq ($(EXPORT_DYNAMIC),TRUE)
-  CPPFLAGS += -DAMREX_EXPORT_DYNAMIC
-  LIBRARIES += -Xlinker -export_dynamic
-  GENERIC_COMP_FLAGS += -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer
-endif
-
 ifeq ($(THREAD_SANITIZER),TRUE)
-  GENERIC_COMP_FLAGS += -fsanitize=thread
+  CXXFLAGS += -fsanitize=thread
 endif
 ifeq ($(FSANITIZER),TRUE)
-  GENERIC_COMP_FLAGS += -fsanitize=address -fsanitize=undefined
+  CXXFLAGS += -fsanitize=address -fsanitize=undefined
 endif
 
 CXXFLAGS += -pthread

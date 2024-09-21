@@ -31,15 +31,15 @@ endif
 # OpenACC, we proabably need to use PGI.
 #
 
-NVCC_HOST_COMP ?= $(AMREX_CCOMP)
+NVCC_HOST_COMP ?= $(AMREXPR_CCOMP)
 
 lowercase_nvcc_host_comp = $(shell echo $(NVCC_HOST_COMP) | tr A-Z a-z)
 
 ifeq ($(lowercase_nvcc_host_comp),$(filter $(lowercase_nvcc_host_comp),gcc gnu g++))
   lowercase_nvcc_host_comp = gnu
-  AMREX_CCOMP = gnu
+  AMREXPR_CCOMP = gnu
   ifndef GNU_DOT_MAK_INCLUDED
-    include $(AMREX_HOME)/Tools/GNUMake/comps/gnu.mak
+    include $(AMREXPR_HOME)/Tools/GNUMake/comps/gnu.mak
   endif
 endif
 

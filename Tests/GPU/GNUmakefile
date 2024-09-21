@@ -1,4 +1,4 @@
-AMREX_HOME := ../..
+AMREXPR_HOME := ../..
 
 DEBUG	= FALSE
 
@@ -17,7 +17,7 @@ ifeq ($(USE_CPU),TRUE)
   USE_SYCL  = FALSE
 endif
 
-include $(AMREX_HOME)/Tools/GNUMake/Make.defs
+include $(AMREXPR_HOME)/Tools/GNUMake/Make.defs
 include ./Make.package
-include $(AMREX_HOME)/Src/Make.package
-include $(AMREX_HOME)/Tools/GNUMake/Make.rules
+include $(AMREXPR_HOME)/Src/Make.package
+include $(AMREXPR_HOME)/Tools/GNUMake/Make.rules

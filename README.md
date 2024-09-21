@@ -31,7 +31,7 @@ follows the convention of the C and C++ programming languages.  Here is an
 example of using the parser.
 
 ```c++
-   #include "AMReX_Parser.H"
+   #include "amrexpr_Parser.H"
 
    Parser parser("if(x>a and x<b, sin(x)*cos(y)*if(z<0, 1.0, exp(-z)), .3*c**2)");
    parser.setConstant(a, ...);

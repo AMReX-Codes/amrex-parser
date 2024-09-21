@@ -1,4 +1,4 @@
-#include "AMReX_Parser.H"
+#include "amrexpr_Parser.H"
 #include <array>
 #include <cstdlib>
 #include <iomanip>
@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-using namespace amrex;
+using namespace amrexpr;
 
 namespace {
     int max_stack_size = 0;
@@ -155,7 +155,7 @@ int test4 (std::string const& f,
 
 int main (int argc, char* argv[])
 {
-    amrex::ignore_unused(argc, argv);
+    amrexpr::ignore_unused(argc, argv);
 
     int nerror = 0;
     {

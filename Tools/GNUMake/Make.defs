@@ -1,7 +1,7 @@
 
-ifneq (,$(findstring ~,$(AMREX_HOME)))
-  $(warning *** AMREX_HOME string contains ~ and make will not like it. So it is replaced.)
-  AMREX_HOME := $(shell echo $(AMREX_HOME))
+ifneq (,$(findstring ~,$(AMREXPR_HOME)))
+  $(warning *** AMREXPR_HOME string contains ~ and make will not like it. So it is replaced.)
+  AMREXPR_HOME := $(shell echo $(AMREXPR_HOME))
 endif
 
 ifneq ($(MAKECMDGOALS),)
@@ -10,9 +10,9 @@ ifeq ($(MAKECMDGOALS),$(filter $(MAKECMDGOALS),realclean clean cleanconfig unins
 endif
 endif
 
-ifneq ("$(wildcard $(AMREX_HOME)/Tools/GNUMake/Make.local-pre)","")
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/Make.local-pre...)
-  include        $(AMREX_HOME)/Tools/GNUMake/Make.local-pre
+ifneq ("$(wildcard $(AMREXPR_HOME)/Tools/GNUMake/Make.local-pre)","")
+  $(info Loading $(AMREXPR_HOME)/Tools/GNUMake/Make.local-pre...)
+  include        $(AMREXPR_HOME)/Tools/GNUMake/Make.local-pre
 endif
 
 ifdef USE_GPU
@@ -29,7 +29,7 @@ endif
 
 ifeq ($(USE_SYCL),TRUE)
   override COMP = sycl
-  DEFINES += -DAMREX_USE_SYCL
+  DEFINES += -DAMREXPR_USE_SYCL
   USE_GPU := TRUE
   USE_CUDA := FALSE
   USE_HIP := FALSE
@@ -150,8 +150,8 @@ ALLOW_DIFFERENT_COMP ?= TRUE
 SKIP_LINKING ?= FALSE
 USE_COMPILE_PIC ?= FALSE
 
-MKCONFIG        = $(AMREX_HOME)/Tools/libamrex/mkconfig.py
-MKPKGCONFIG     = $(AMREX_HOME)/Tools/libamrex/mkpkgconfig.py
+MKCONFIG        = $(AMREXPR_HOME)/Tools/libamrexpr/mkconfig.py
+MKPKGCONFIG     = $(AMREXPR_HOME)/Tools/libamrexpr/mkpkgconfig.py
 
 USE_LEGACY_DEPFLAGS = FALSE
 DEPFLAGS = -MMD -MP
@@ -163,30 +163,30 @@ EXE_OUTPUT_OPTION      = -o $(objEXETempDir)/$*.o
 
 ifeq ($(USE_HIP),TRUE)
   ifdef HIPCC_HOST_COMP
-    AMREX_CCOMP = $(HIP_HOST_COMP)
+    AMREXPR_CCOMP = $(HIP_HOST_COMP)
   else
-    AMREX_CCOMP = gnu
+    AMREXPR_CCOMP = gnu
   endif
 else ifeq ($(USE_CUDA),TRUE)
   ifdef NVCC_HOST_COMP
-    AMREX_CCOMP = $(NVCC_HOST_COMP)
+    AMREXPR_CCOMP = $(NVCC_HOST_COMP)
   else
-    AMREX_CCOMP = gnu
+    AMREXPR_CCOMP = gnu
   endif
 endif
 
-ifdef AMREX_CCOMP
-  lowercase_amrex_ccomp = $(shell echo $(AMREX_CCOMP) | tr A-Z a-z)
-  ifeq ($(lowercase_amrex_ccomp),$(filter $(lowercase_amrex_ccomp),gcc gnu g++))
-    AMREX_CCOMP = gnu
-  else ifeq ($(lowercase_amrex_ccomp),intel)
-    AMREX_CCOMP = intel
-  else ifeq ($(lowercase_amrex_ccomp),sycl)
-    AMREX_CCOMP = sycl
-  else ifeq ($(lowercase_amrex_ccomp),$(filter $(lowercase_amrex_ccomp),llvm clang clang++))
-    AMREX_CCOMP = clang
+ifdef AMREXPR_CCOMP
+  lowercase_amrexpr_ccomp = $(shell echo $(AMREXPR_CCOMP) | tr A-Z a-z)
+  ifeq ($(lowercase_amrexpr_ccomp),$(filter $(lowercase_amrexpr_ccomp),gcc gnu g++))
+    AMREXPR_CCOMP = gnu
+  else ifeq ($(lowercase_amrexpr_ccomp),intel)
+    AMREXPR_CCOMP = intel
+  else ifeq ($(lowercase_amrexpr_ccomp),sycl)
+    AMREXPR_CCOMP = sycl
+  else ifeq ($(lowercase_amrexpr_ccomp),$(filter $(lowercase_amrexpr_ccomp),llvm clang clang++))
+    AMREXPR_CCOMP = clang
   else
-    $(error Unknown compiler $(AMREX_CCOMP) to the make system)
+    $(error Unknown compiler $(AMREXPR_CCOMP) to the make system)
   endif
 endif
 
@@ -194,26 +194,26 @@ lowercase_comp = $(shell echo $(COMP) | tr A-Z a-z)
 
 ifeq ($(lowercase_comp),$(filter $(lowercase_comp),gcc gnu g++))
   lowercase_comp = gnu
-  AMREX_CCOMP ?= gnu
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/gnu.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/gnu.mak
+  AMREXPR_CCOMP ?= gnu
+  $(info Loading $(AMREXPR_HOME)/Tools/GNUMake/comps/gnu.mak...)
+  include        $(AMREXPR_HOME)/Tools/GNUMake/comps/gnu.mak
 else ifeq ($(lowercase_comp),intel)
-  AMREX_CCOMP ?= intel
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/intel.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/intel.mak
+  AMREXPR_CCOMP ?= intel
+  $(info Loading $(AMREXPR_HOME)/Tools/GNUMake/comps/intel.mak...)
+  include        $(AMREXPR_HOME)/Tools/GNUMake/comps/intel.mak
 else ifeq ($(lowercase_comp),sycl)
-  AMREX_CCOMP ?= sycl
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/dpcpp.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/dpcpp.mak
+  AMREXPR_CCOMP ?= sycl
+  $(info Loading $(AMREXPR_HOME)/Tools/GNUMake/comps/dpcpp.mak...)
+  include        $(AMREXPR_HOME)/Tools/GNUMake/comps/dpcpp.mak
 else ifeq ($(lowercase_comp),$(filter $(lowercase_comp),llvm clang clang++))
   lowercase_comp = llvm
-  AMREX_CCOMP ?= clang
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/llvm.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/llvm.mak
+  AMREXPR_CCOMP ?= clang
+  $(info Loading $(AMREXPR_HOME)/Tools/GNUMake/comps/llvm.mak...)
+  include        $(AMREXPR_HOME)/Tools/GNUMake/comps/llvm.mak
 else ifeq ($(lowercase_comp),hip)
-  AMREX_CCOMP ?= hip
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/hip.mak...)
-  include        $(AMREX_HOME)/Tools/GNUMake/comps/hip.mak
+  AMREXPR_CCOMP ?= hip
+  $(info Loading $(AMREXPR_HOME)/Tools/GNUMake/comps/hip.mak...)
+  include        $(AMREXPR_HOME)/Tools/GNUMake/comps/hip.mak
 else
   $(error Unknown compiler $(COMP) to the make system.)
 endif
@@ -222,19 +222,19 @@ CXXFLAGS += $(XTRA_CXXFLAGS)
 CPPFLAGS += $(XTRA_CPPFLAGS)
 
 ifeq ($(DEBUG),TRUE)
-    CPPFLAGS	+= -DAMREX_DEBUG
+    CPPFLAGS	+= -DAMREXPR_DEBUG
     DebugSuffix := .DEBUG
 else
     DebugSuffix :=
 endif
 
 ifeq ($(USE_FORCE_INLINE),TRUE)
-    CPPFLAGS += -DAMREX_USE_FORCE_INLINE
+    CPPFLAGS += -DAMREXPR_USE_FORCE_INLINE
 endif
 
 ifeq ($(USE_FLATTEN_FOR),TRUE)
 ifneq ($(DEBUG),TRUE)
-    CPPFLAGS += -DAMREX_USE_FLATTEN_FOR
+    CPPFLAGS += -DAMREXPR_USE_FLATTEN_FOR
 endif
 endif
 
@@ -242,7 +242,7 @@ ifeq ($(USE_HIP),TRUE)
 
     USE_GPU := TRUE
 
-    DEFINES += -DAMREX_USE_HIP
+    DEFINES += -DAMREXPR_USE_HIP
 
     GPUSuffix := .HIP
 
@@ -250,10 +250,10 @@ else ifeq ($(USE_CUDA),TRUE)
 
     USE_GPU := TRUE
 
-    $(info Loading $(AMREX_HOME)/Tools/GNUMake/comps/nvcc.mak...)
-    include $(AMREX_HOME)/Tools/GNUMake/comps/nvcc.mak
+    $(info Loading $(AMREXPR_HOME)/Tools/GNUMake/comps/nvcc.mak...)
+    include $(AMREXPR_HOME)/Tools/GNUMake/comps/nvcc.mak
 
-    DEFINES += -DAMREX_USE_CUDA
+    DEFINES += -DAMREXPR_USE_CUDA
 
     GPUSuffix := .CUDA
 
@@ -262,11 +262,11 @@ else
 endif
 
 ifeq ($(USE_GPU),TRUE)
-    DEFINES += -DAMREX_USE_GPU
+    DEFINES += -DAMREXPR_USE_GPU
 endif
 
 ifeq ($(PRECISION),FLOAT)
-    DEFINES += -DAMREX_USE_FLOAT
+    DEFINES += -DAMREXPR_USE_FLOAT
     PrecisionSuffix := .$(PRECISION)
 else
     PrecisionSuffix :=
@@ -310,12 +310,12 @@ tmpEXETempDir	= $(TMP_BUILD_DIR)/t/$(optionsSuffix).EXE
 
 includes	= -I$(srcTempDir) -I. $(addprefix -I, $(INCLUDE_LOCATIONS)) $(addprefix -isystem , $(SYSTEM_INCLUDE_LOCATIONS))
 
-amrexlib = $(objEXETempDir)/libamrex.a
+amrexprlib = $(objEXETempDir)/libamrexpr.a
 
-AMREX_INSTALL_DIR ?= $(TMP_BUILD_DIR)
-amrexLibDir = $(AMREX_INSTALL_DIR)/lib
-amrexIncludeDir = $(AMREX_INSTALL_DIR)/include
-amrexPkgconfigDir = $(AMREX_INSTALL_DIR)/lib/pkgconfig
+AMREXPR_INSTALL_DIR ?= $(TMP_BUILD_DIR)
+amrexprLibDir = $(AMREXPR_INSTALL_DIR)/lib
+amrexprIncludeDir = $(AMREXPR_INSTALL_DIR)/include
+amrexprPkgconfigDir = $(AMREXPR_INSTALL_DIR)/lib/pkgconfig
 
 #
 # For source code manipulation
@@ -329,9 +329,9 @@ else
   CCACHE =
 endif
 
-ifneq ("$(wildcard $(AMREX_HOME)/Tools/GNUMake/Make.local)","")
-  $(info Loading $(AMREX_HOME)/Tools/GNUMake/Make.local...)
-  include        $(AMREX_HOME)/Tools/GNUMake/Make.local
+ifneq ("$(wildcard $(AMREXPR_HOME)/Tools/GNUMake/Make.local)","")
+  $(info Loading $(AMREXPR_HOME)/Tools/GNUMake/Make.local...)
+  include        $(AMREXPR_HOME)/Tools/GNUMake/Make.local
 endif
 
 FINAL_LIBS = $(libraries)
@@ -341,10 +341,10 @@ ifeq ($(USE_SYCL),TRUE)
 else ifeq ($(USE_HIP),TRUE)
 
     LINKFLAGS = $(HIPCC_FLAGS)
-    AMREX_LINKER = hipcc
+    AMREXPR_LINKER = hipcc
 
-    ifdef AMREX_AMD_ARCH
-      AMD_ARCH = $(AMREX_AMD_ARCH)
+    ifdef AMREXPR_AMD_ARCH
+      AMD_ARCH = $(AMREXPR_AMD_ARCH)
     endif
 
     ifeq ($(AMD_ARCH),)
@@ -361,8 +361,8 @@ else ifeq ($(USE_HIP),TRUE)
 
 else ifeq ($(USE_CUDA),TRUE)
 
-    ifdef AMREX_CUDA_ARCH
-      CUDA_ARCH = $(AMREX_CUDA_ARCH)
+    ifdef AMREXPR_CUDA_ARCH
+      CUDA_ARCH = $(AMREXPR_CUDA_ARCH)
     endif
 
     ifeq ($(MAKECMDGOALS),)
@@ -393,7 +393,7 @@ else ifeq ($(USE_CUDA),TRUE)
     endif
 
     LINKFLAGS = $(NVCC_FLAGS) $(NVCC_ARCH_LINK_FLAGS) $(CXXFLAGS_FROM_HOST)
-    AMREX_LINKER = nvcc
+    AMREXPR_LINKER = nvcc
 
     ifeq ($(nvcc_forward_unknowns),0)
 
@@ -401,7 +401,7 @@ else ifeq ($(USE_CUDA),TRUE)
       space :=
       space +=
 
-      ifeq ($(AMREX_LINKER),nvcc)
+      ifeq ($(AMREXPR_LINKER),nvcc)
         ifeq ($(FIX_NVCC_PTHREAD),TRUE)
           FINAL_LIBS = $(subst -pthread,-Xcompiler$(space)-pthread,$(subst -Wl$(comm),-Xlinker=,$(libraries)))
         else

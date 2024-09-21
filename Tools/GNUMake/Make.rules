@@ -4,7 +4,7 @@ vpath %.cpp  $(FINAL_VPATH_LOCATIONS)
 vpath %.H    $(FINAL_VPATH_LOCATIONS)
 vpath %.hpp  $(FINAL_VPATH_LOCATIONS)
 
-vpath AMReX_Config.H $(srcTempDir)
+vpath amrexpr_Config.H $(srcTempDir)
 
 FCPPFLAGS := $(addprefix $(CPP_PREFIX), $(CPPFLAGS))
 
@@ -21,15 +21,15 @@ ifndef LINKFLAGS
   LINKFLAGS = $(CXXFLAGS)
 endif
 
-ifndef AMREX_LINKER
-  AMREX_LINKER = $(CXX)
+ifndef AMREXPR_LINKER
+  AMREXPR_LINKER = $(CXX)
 endif
 
 CXXDEPFLAGS = $(LEGACY_DEPFLAGS) $(filter-out -dc,$(CXXFLAGS)) $(CPPFLAGS) $(includes)
 
 ifneq ($(CCACHE),)
-  ifneq ($(AMREX_CCACHE_ENV),)
-    CCACHE_COMMAND = $(AMREX_CCACHE_ENV) $(CCACHE)
+  ifneq ($(AMREXPR_CCACHE_ENV),)
+    CCACHE_COMMAND = $(AMREXPR_CCACHE_ENV) $(CCACHE)
   else
     CCACHE_COMMAND = $(CCACHE)
   endif
@@ -43,96 +43,96 @@ endif
 $(executable): $(objForExecs)
 ifneq ($(SKIP_LINKING),TRUE)
 	@echo Linking $@ ...
-	$(SILENT) $(AMREX_LINKER) $(LINKFLAGS) $(CPPFLAGS) $(includes) $(LDFLAGS) -o $@ $^ $(FINAL_LIBS)
+	$(SILENT) $(AMREXPR_LINKER) $(LINKFLAGS) $(CPPFLAGS) $(includes) $(LDFLAGS) -o $@ $^ $(FINAL_LIBS)
 #	@echo SUCCESS
 endif
 
-$(srcTempDir)/AMReX_Config.H:
-	@echo Generating AMReX_Config.H ...
+$(srcTempDir)/amrexpr_Config.H:
+	@echo Generating amrexpr_Config.H ...
 	@if [ ! -d $(srcTempDir) ]; then mkdir -p $(srcTempDir); fi
 	@ $(MKCONFIG) --defines="$(CPPFLAGS)" --undefines="" \
 	              --comp="$(lowercase_comp)" \
 	              --allow-different-compiler="$(ALLOW_DIFFERENT_COMP)" \
 	              > $@
 
-$(amrexlib): $(objForExecs)
-	@echo Building libamrex.a
+$(amrexprlib): $(objForExecs)
+	@echo Building libamrexpr.a
 	$(SILENT) $(AR) $(ARFLAGS) $@ $^
 	$(SILENT) $(RANLIB) $@
 
 install_lib:
-	@echo Installing libamrex.a at $(amrexLibDir) ...
-	@if [ ! -d $(amrexLibDir) ]; then mkdir -p $(amrexLibDir); fi
-	@if test -f $(amrexlib); then \
-	  install -c -m 644 $(amrexlib) $(amrexLibDir); \
+	@echo Installing libamrexpr.a at $(amrexprLibDir) ...
+	@if [ ! -d $(amrexprLibDir) ]; then mkdir -p $(amrexprLibDir); fi
+	@if test -f $(amrexprlib); then \
+	  install -c -m 644 $(amrexprlib) $(amrexprLibDir); \
 	else \
-	  echo "$(amrexlib) does not exist!"; \
+	  echo "$(amrexprlib) does not exist!"; \
 	fi
 
 uninstall_lib:
-	@echo Uninstalling libamrex.a and objects from $(amrexLibDir) and $(objEXETempDir) ...
-	@if test -f $(amrexlib); then \
-	  $(SILENT) $(RM) $(amrexlib); \
+	@echo Uninstalling libamrexpr.a and objects from $(amrexprLibDir) and $(objEXETempDir) ...
+	@if test -f $(amrexprlib); then \
+	  $(SILENT) $(RM) $(amrexprlib); \
 	  $(SILENT) $(RM) $(objForExecs); \
-	  $(SILENT) $(RM) $(amrexLibDir)/libamrex.a; \
+	  $(SILENT) $(RM) $(amrexprLibDir)/libamrexpr.a; \
 	else \
-	  echo "$(amrexlib) does not exist!"; \
+	  echo "$(amrexprlib) does not exist!"; \
 	fi
-	@if [ -d $(amrexLibDir) ]; then \
-	    $(SILENT) rmdir -p --ignore-fail-on-non-empty $(amrexLibDir); \
+	@if [ -d $(amrexprLibDir) ]; then \
+	    $(SILENT) rmdir -p --ignore-fail-on-non-empty $(amrexprLibDir); \
 	fi
 
 install_headers:
-	@echo Installing headers at $(amrexIncludeDir) ...
-	@if [ ! -d $(amrexIncludeDir) ]; then mkdir -p $(amrexIncludeDir); fi
+	@echo Installing headers at $(amrexprIncludeDir) ...
+	@if [ ! -d $(amrexprIncludeDir) ]; then mkdir -p $(amrexprIncludeDir); fi
 	@for d in $(Pdirs); do \
 	  for h in $(CEXE_headers); do \
 	    f=Src/$$d/$$h; \
 	    if test -f "$$f"; then \
-	      install -c -m 644 "$$f" $(amrexIncludeDir); \
+	      install -c -m 644 "$$f" $(amrexprIncludeDir); \
 	    fi; \
 	  done; \
 	done
-	@install -c -m 644 $(srcTempDir)/AMReX_Config.H $(amrexIncludeDir)
+	@install -c -m 644 $(srcTempDir)/amrexpr_Config.H $(amrexprIncludeDir)
 
 uninstall_headers:
-	@echo Uninstall headers at $(amrexIncludeDir) ...
+	@echo Uninstall headers at $(amrexprIncludeDir) ...
 	@for d in $(Pdirs); do \
 	  for h in $(CEXE_headers); do \
 	    f=Src/$$d/$$h; \
 	    if test -f "$$f"; then \
-	       $(SILENT) $(RM) $(amrexIncludeDir)/$$h; \
+	       $(SILENT) $(RM) $(amrexprIncludeDir)/$$h; \
 	    fi; \
 	  done; \
 	done
-	@$(SILENT) $(RM) $(amrexIncludeDir)/AMReX_Config.H;
-	@if [ -d $(amrexIncludeDir) ]; then \
-	    $(SILENT) rmdir -p --ignore-fail-on-non-empty $(amrexIncludeDir); \
+	@$(SILENT) $(RM) $(amrexprIncludeDir)/amrexpr_Config.H;
+	@if [ -d $(amrexprIncludeDir) ]; then \
+	    $(SILENT) rmdir -p --ignore-fail-on-non-empty $(amrexprIncludeDir); \
 	fi;
 
-$(objEXETempDir)/amrex.pc: FORCE
-	@echo Generating amrex.pc ...
-	@ $(MKPKGCONFIG) --prefix="$(abspath $(AMREX_INSTALL_DIR))" \
-	                 --version="$(AMREX_GIT_VERSION)" \
+$(objEXETempDir)/amrexpr.pc: FORCE
+	@echo Generating amrexpr.pc ...
+	@ $(MKPKGCONFIG) --prefix="$(abspath $(AMREXPR_INSTALL_DIR))" \
+	                 --version="$(AMREXPR_GIT_VERSION)" \
 	                 --cflags="$(CXXFLAGS) $(EXTRACXXFLAGS)" \
 	                 --libs="$(filter-out -L.,$(LDFLAGS)) $(FINAL_LIBS)" \
 	                 --libpriv="" \
                          > $@
 
-install_pkg_config: $(objEXETempDir)/amrex.pc
-	@echo Installing amrex.pc ...
-	@if [ ! -d $(amrexPkgconfigDir) ]; then mkdir -p $(amrexPkgconfigDir); fi
-	$(SILENT) install -c -m 644 $< $(amrexPkgconfigDir)
+install_pkg_config: $(objEXETempDir)/amrexpr.pc
+	@echo Installing amrexpr.pc ...
+	@if [ ! -d $(amrexprPkgconfigDir) ]; then mkdir -p $(amrexprPkgconfigDir); fi
+	$(SILENT) install -c -m 644 $< $(amrexprPkgconfigDir)
 
 uninstall_pkg_config:
-	@echo Uninstalling amrex.pc ...
-	@$(SILENT) $(RM) $(objEXETempDir)/amrex.pc
-	@$(SILENT) $(RM) $(amrexPkgconfigDir)/amrex.pc
-	@if [ -d $(amrexPkgconfigDir) ]; then \
-	    $(SILENT) rmdir -p --ignore-fail-on-non-empty $(amrexPkgconfigDir); \
+	@echo Uninstalling amrexpr.pc ...
+	@$(SILENT) $(RM) $(objEXETempDir)/amrexpr.pc
+	@$(SILENT) $(RM) $(amrexprPkgconfigDir)/amrexpr.pc
+	@if [ -d $(amrexprPkgconfigDir) ]; then \
+	    $(SILENT) rmdir -p --ignore-fail-on-non-empty $(amrexprPkgconfigDir); \
 	fi;
-	@if [ -d $(amrexLibDir) ]; then \
-	    $(SILENT) rmdir -p --ignore-fail-on-non-empty $(amrexLibDir); \
+	@if [ -d $(amrexprLibDir) ]; then \
+	    $(SILENT) rmdir -p --ignore-fail-on-non-empty $(amrexprLibDir); \
 	fi;
 
 cleanconfig::
@@ -154,7 +154,7 @@ clean:: cleanconfig
 realclean:: clean
 
 file_locations:
-	$(AMREX_HOME)/Tools/F_scripts/find_files_vpath.py --vpath "$(FINAL_VPATH_LOCATIONS)" --files "$(CEXE_sources) $(CEXE_headers)"
+	$(AMREXPR_HOME)/Tools/F_scripts/find_files_vpath.py --vpath "$(FINAL_VPATH_LOCATIONS)" --files "$(CEXE_sources) $(CEXE_headers)"
 
 
 tags:	$(allSources)
@@ -172,7 +172,7 @@ FORCE:
 #
 # Rules for objects.
 #
-$(objEXETempDir)/%.o: %.cpp $(srcTempDir)/AMReX_Config.H $(AUTO_BUILD_SOURCES)
+$(objEXETempDir)/%.o: %.cpp $(srcTempDir)/amrexpr_Config.H $(AUTO_BUILD_SOURCES)
 	@echo Compiling $*.cpp ...
 	@if [ ! -d $(objEXETempDir) ]; then mkdir -p $(objEXETempDir); fi
 	$(SILENT) $(CCACHE_COMMAND) $(CCACHEFLAGS) $(CXX) $(DEPFLAGS) $(CXXFLAGS) $(EXTRACXXFLAGS) $(CPPFLAGS) $(includes) $(mpicxx_include_dirs) -c $< $(EXE_OUTPUT_OPTION)
@@ -181,7 +181,7 @@ $(objEXETempDir)/%.o: %.cpp $(srcTempDir)/AMReX_Config.H $(AUTO_BUILD_SOURCES)
 # Rules for dependencies in bare object files.
 #
 
-$(depEXETempDir)/%.d: %.cpp $(srcTempDir)/AMReX_Config.H $(AUTO_BUILD_SOURCES)
+$(depEXETempDir)/%.d: %.cpp $(srcTempDir)/amrexpr_Config.H $(AUTO_BUILD_SOURCES)
 	@echo Depending $< ...
 	@if [ ! -d $(depEXETempDir) ]; then mkdir -p $(depEXETempDir); fi
 ifeq ($(USE_SYCL),TRUE)
