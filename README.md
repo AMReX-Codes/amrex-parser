@@ -86,7 +86,30 @@ and more.
 
 ### Option 2: Using CMake
 
-CMake support is still under development.
+To build for CPUs, follow these steps in the `amrexpr` root directory:
+
+```console
+$ cmake -S . -B build -DCMAKE_INSTALL_PREFIX=<installation_direction>
+$ cmake --build build -j 8
+$ cmake --install build
+```
+
+To build for GPUs, we use the `ENABLE_[CUDA|HIP|SYCL]` option and specify
+the GPU architecture in the configure step. For example
+
+```console
+# Nvidia GPU w/ compute capability 8.0
+$ cmake -S . -B build -DCMAKE_INSTALL_PREFIX=<installation_direction> \
+      -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=80
+
+# Nvidia GPU w/ compute capability 8.0
+$ cmake -S . -B build -DCMAKE_INSTALL_PREFIX=<installation_direction> \
+      -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=80
+
+# Nvidia GPU w/ compute capability 8.0
+$ cmake -S . -B build -DCMAKE_INSTALL_PREFIX=<installation_direction> \
+      -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=80
+```
 
 ## Copyright Notice
 
