@@ -27,7 +27,7 @@ void init_sycl (sycl::device& d, sycl::context& c, sycl::queue& q)
 sycl::device* getSyclDevice ()
 {
     AMREXPR_ALWAYS_ASSERT_WITH_MESSAGE(sycl_device,
-                                     "init_sycl must be called to initialize"
+                                     "amrexpr::Gpu::init_sycl must be called to initialize"
                                      "SYCL Device for SYCL backend");
     return sycl_device;
 }
@@ -35,7 +35,7 @@ sycl::device* getSyclDevice ()
 sycl::context* getSyclContext ()
 {
     AMREXPR_ALWAYS_ASSERT_WITH_MESSAGE(sycl_context,
-                                     "init_sycl must be called to initialize"
+                                     "amrexpr::Gpu::init_sycl must be called to initialize"
                                      "SYCL Context for SYCL backend");
     return sycl_context;
 }
