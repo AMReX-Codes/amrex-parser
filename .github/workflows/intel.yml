@@ -99,6 +99,6 @@ jobs:
         cd Tutorials/libamrexpr
         mkdir build
         cd build
-        cmake .. -DCMAKE_PREFIX_PATH=../../../installdir -DCMAKE_CXX_COMPILER=icpx
+        cmake .. -DCMAKE_PREFIX_PATH=$(realpath ../../../installdir) -DCMAKE_CXX_COMPILER=icpx
         make -j4 VEBOSE=ON
         ./parser_test
