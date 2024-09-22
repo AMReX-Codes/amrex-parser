@@ -92,6 +92,7 @@ jobs:
         cd build
         cmake .. -DCMAKE_CXX_COMPILER=icpx -DCMAKE_INSTALL_PREFIX=../installdir
         make -j4 VERBOSE=ON
+        make install
         cd ..
     - name: Run
       run: |
