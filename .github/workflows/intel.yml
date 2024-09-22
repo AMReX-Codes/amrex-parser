@@ -77,7 +77,10 @@ jobs:
         set -e
         mkdir build
         cd build
-        cmake .. -DCMAKE_CXX_COMPILER=icpx -DENABLE_TESTS=ON
+        cmake .. \
+            -DCMAKE_CXX_FLAGS="-fp-model=precise" \
+            -DCMAKE_CXX_COMPILER=icpx \
+            -DENABLE_TESTS=ON
         make -j4 VERBOSE=ON
         ctest --output-on-failure
 
