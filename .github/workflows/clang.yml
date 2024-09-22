@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Tests:
-    name: Clang CPU Tests
+  Tests-gmake:
+    name: Clang Tests & GNU Make
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -33,7 +33,7 @@ jobs:
         make -j4 USE_CPU=TRUE COMP=clang
         ./main.llvm.ex
 
-  Tutorials:
+  Tutorials-gmake:
     name: Clang libamrexpr & GNU Make
     runs-on: ubuntu-latest
     steps:
@@ -51,3 +51,43 @@ jobs:
         cd Tutorials/libamrexpr
         make -j4 CXX=clang++
         ./a.out
+
+  Tests-cmake:
+    name: Clang Tests & CMake
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_clang.sh
+    - name: Tests
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_CXX_COMPILER=clang++ -DENABLE_TESTS=ON
+        make -j4 VERBOSE=ON
+        ctest --output-on-failure
+
+  Tutorials-gmake:
+    name: Clang libamrexpr & GNU Make
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_clang.sh
+    - name: Build libamrexpr
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=../installdir
+        make -j4 VERBOSE=ON
+        cd ..
+    - name: Run
+      run: |
+        cd Tutorials/libamrexpr
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_PREFIX_PATH=../../installdir -DCMAKE_CXX_COMPILER=clang++
+        make -j4 VEBOSE=ON
+        ./parser_test

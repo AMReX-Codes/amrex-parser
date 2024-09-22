@@ -31,4 +31,5 @@ echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | sudo t
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends \
     build-essential \
+    cmake           \
     rocm-dev

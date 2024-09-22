@@ -51,3 +51,43 @@ jobs:
         cd Tutorials/libamrexpr
         make -j4 CXX=g++
         ./a.out
+
+  Tests-cmake:
+    name: GCC Tests & CMake
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_gcc.sh
+    - name: Tests
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_CXX_COMPILER=g++ -DENABLE_TESTS=ON
+        make -j4 VERBOSE=ON
+        ctest --output-on-failure
+
+  Tutorials-gmake:
+    name: GCC libamrexpr & GNU Make
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_gcc.sh
+    - name: Build libamrexpr
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_CXX_COMPILER=g++ -DCMAKE_INSTALL_PREFIX=../installdir
+        make -j4 VERBOSE=ON
+        cd ..
+    - name: Run
+      run: |
+        cd Tutorials/libamrexpr
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_PREFIX_PATH=../../installdir -DCMAKE_CXX_COMPILER=g++
+        make -j4 VEBOSE=ON
+        ./parser_test

@@ -22,6 +22,7 @@ sudo dpkg -i cuda-keyring_1.1-1_all.deb
 sudo apt-get update
 VERSION_DASHED=$(apt-cache search cuda-compiler* | tail -n1 | cut -d' '  -f1 | sed 's/cuda-compiler-//')
 sudo apt-get install -y \
+    cmake \
     cuda-command-line-tools-$VERSION_DASHED \
     cuda-compiler-$VERSION_DASHED           \
     cuda-minimal-build-$VERSION_DASHED

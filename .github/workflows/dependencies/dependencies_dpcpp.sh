@@ -25,6 +25,7 @@ for itry in {1..5}
 do
     sudo apt-get install -y --no-install-recommends \
         build-essential \
+        cmake           \
         intel-oneapi-compiler-dpcpp-cpp \
         && { sudo apt-get clean; status=0; break; }  \
         || { sleep 10; }
