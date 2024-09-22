@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Tests:
-    name: SYCL Tests
+  Tests-gmake:
+    name: SYCL Tests & GNU Make
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -27,3 +27,59 @@ jobs:
 
         cd Tests/GPU
         make -j4 USE_SYCL=TRUE
+
+  Tests-cmake:
+    name: SYCL Tests & CMake
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_dpcpp.sh
+    - name: Tests
+      run: |
+        set +e
+        source /opt/intel/oneapi/setvars.sh
+        set -e
+
+        mkdir build
+        cd build
+        cmake .. \
+            -DCMAKE_INSTALL_PREFIX=../sycl_installdir \
+            -DENABLE_SYCL=ON \
+            -DCMAKE_CXX_COMPILER=icpx \
+            -DENABLE_TESTS=ON
+        make -j4 VERBOSE=ON
+        make install
+
+  Tutorials-cmake:
+    name: SYCL Tutorials & CMake
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_dpcpp.sh
+    - name: Tests
+      run: |
+        set +e
+        source /opt/intel/oneapi/setvars.sh
+        set -e
+
+        mkdir build
+        cd build
+        cmake .. \
+            -DCMAKE_INSTALL_PREFIX=../sycl_installdir \
+            -DENABLE_SYCL=ON \
+            -DCMAKE_CXX_COMPILER=icpx
+        make -j4 VERBOSE=ON
+        make install
+
+        cd ../Tutorials/libamrexpr
+        mkdir build
+        cd build
+        cmake .. \
+            -DCMAKE_PREFIX_PATH=$(realpath ../../../sycl_installdir) \
+            -DENABLE_SYCL=ON \
+            -DCMAKE_CXX_COMPILER=icpx
+        make -j4 VERBOSE=ON

@@ -105,6 +105,10 @@ $ cmake -S . -B build -DCMAKE_INSTALL_PREFIX=<installation_direction> \
 # AMD MI250X GPU, gfx90a architecture
 $ cmake -S . -B build -DCMAKE_INSTALL_PREFIX=<installation_direction> \
       -DENABLE_HIP=ON -DCMAKE_HIP_ARCHITECTURES=gfx908
+
+# Intel GPU
+$ cmake -S . -B build -DCMAKE_INSTALL_PREFIX=<installation_direction> \
+      -DENABLE_SYCL=ON -DCMAKE_CXX_COMPILER=icpx
 ```
 
 ## Copyright Notice

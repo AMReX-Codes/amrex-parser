@@ -82,6 +82,7 @@ endif()
 
 if (ENABLE_SYCL)
     target_compile_options(amrexpr PUBLIC -fsycl)
+    target_link_options(amrexpr PUBLIC -fsycl -fsycl-device-lib=libc,libm-fp32,libm-fp64)
 endif()
 
 install(TARGETS amrexpr EXPORT amrexprTargets)
