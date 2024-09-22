@@ -68,8 +68,8 @@ jobs:
         make -j4 VERBOSE=ON
         ctest --output-on-failure
 
-  Tutorials-gmake:
-    name: Clang libamrexpr & GNU Make
+  Tutorials-cmake:
+    name: Clang libamrexpr & CMake
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4

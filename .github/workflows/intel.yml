@@ -78,8 +78,8 @@ jobs:
         make -j4 VERBOSE=ON
         ctest --output-on-failure
 
-  Tutorials-gmake:
-    name: Intel libamrexpr & GNU Make
+  Tutorials-cmake:
+    name: Intel libamrexpr & CMake
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
