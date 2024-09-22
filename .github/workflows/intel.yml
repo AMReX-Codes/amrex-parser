@@ -72,6 +72,9 @@ jobs:
         .github/workflows/dependencies/dependencies_dpcpp.sh
     - name: Tests
       run: |
+        set +e
+        source /opt/intel/oneapi/setvars.sh
+        set -e
         mkdir build
         cd build
         cmake .. -DCMAKE_CXX_COMPILER=icpx -DENABLE_TESTS=ON
@@ -88,6 +91,9 @@ jobs:
         .github/workflows/dependencies/dependencies_dpcpp.sh
     - name: Build libamrexpr
       run: |
+        set +e
+        source /opt/intel/oneapi/setvars.sh
+        set -e
         mkdir build
         cd build
         cmake .. -DCMAKE_CXX_COMPILER=icpx -DCMAKE_INSTALL_PREFIX=../installdir
@@ -96,6 +102,9 @@ jobs:
         cd ..
     - name: Run
       run: |
+        set +e
+        source /opt/intel/oneapi/setvars.sh
+        set -e
         cd Tutorials/libamrexpr
         mkdir build
         cd build
