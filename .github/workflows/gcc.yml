@@ -88,6 +88,6 @@ jobs:
         cd Tutorials/libamrexpr
         mkdir build
         cd build
-        cmake .. -DCMAKE_PREFIX_PATH=../../installdir -DCMAKE_CXX_COMPILER=g++
+        cmake .. -DCMAKE_PREFIX_PATH=../../../installdir -DCMAKE_CXX_COMPILER=g++
         make -j4 VEBOSE=ON
         ./parser_test
