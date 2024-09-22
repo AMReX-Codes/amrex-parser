@@ -39,6 +39,7 @@ jobs:
       run: |
         export PATH=/opt/rocm/bin:$PATH
         hipcc --version
+        cmake --version
 
         mkdir build
         cd build
@@ -51,7 +52,7 @@ jobs:
         make install
 
   Tutorials-cmake:
-    name: HIP Tests & CMake
+    name: HIP Tutorials & CMake
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -62,6 +63,7 @@ jobs:
       run: |
         export PATH=/opt/rocm/bin:$PATH
         hipcc --version
+        cmake --version
 
         mkdir build
         cd build
@@ -76,7 +78,7 @@ jobs:
         mkdir build
         cd build
         cmake .. \
-            -DCMAKE_PREFIX_PATH=$(realpath ../../../hip_installdir)
+            -DCMAKE_PREFIX_PATH=$(realpath ../../../hip_installdir) \
             -DENABLE_HIP=ON \
             -DCMAKE_HIP_ARCHITECTURES=gfx90a
         make -j4 VERBOSE=ON
