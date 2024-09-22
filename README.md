@@ -102,13 +102,9 @@ the GPU architecture in the configure step. For example
 $ cmake -S . -B build -DCMAKE_INSTALL_PREFIX=<installation_direction> \
       -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=80
 
-# Nvidia GPU w/ compute capability 8.0
+# AMD MI250X GPU, gfx90a architecture
 $ cmake -S . -B build -DCMAKE_INSTALL_PREFIX=<installation_direction> \
-      -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=80
-
-# Nvidia GPU w/ compute capability 8.0
-$ cmake -S . -B build -DCMAKE_INSTALL_PREFIX=<installation_direction> \
-      -DENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=80
+      -DENABLE_HIP=ON -DCMAKE_HIP_ARCHITECTURES=gfx908
 ```
 
 ## Copyright Notice

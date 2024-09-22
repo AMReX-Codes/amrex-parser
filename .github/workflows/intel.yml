@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Tests:
-    name: Intel CPU Tests
+  Tests-gmake:
+    name: Intel Tests & GNU Make
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
         make -j4 USE_CPU=TRUE COMP=intel
         ./main.intel.ex
 
-  Tutorials:
+  Tutorials-gmake:
     name: Intel libamrexpr & GNU Make
     runs-on: ubuntu-latest
     steps:

@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Tests:
-    name: HIP Tests
+  Tests-gmake:
+    name: HIP Tests & GNU Make
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v4
@@ -27,3 +27,56 @@ jobs:
         cd Tests/GPU
         make -j4 USE_HIP=TRUE AMD_ARCH=gfx90a
 
+  Tests-cmake:
+    name: HIP Tests & CMake
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_hip.sh
+    - name: Tests
+      run: |
+        export PATH=/opt/rocm/bin:$PATH
+        hipcc --version
+
+        mkdir build
+        cd build
+        cmake .. \
+            -DCMAKE_INSTALL_PREFIX=../hip_installdir \
+            -DENABLE_HIP=ON \
+            -DCMAKE_HIP_ARCHITECTURES=gfx90a \
+            -DENABLE_TESTS=ON
+        make -j4 VERBOSE=ON
+        make install
+
+  Tutorials-cmake:
+    name: HIP Tests & CMake
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_hip.sh
+    - name: Tests
+      run: |
+        export PATH=/opt/rocm/bin:$PATH
+        hipcc --version
+
+        mkdir build
+        cd build
+        cmake .. \
+            -DCMAKE_INSTALL_PREFIX=../hip_installdir \
+            -DENABLE_HIP=ON \
+            -DCMAKE_HIP_ARCHITECTURES=gfx90a
+        make -j4 VERBOSE=ON
+        make install
+
+        cd ../Tutorials/libamrexpr
+        mkdir build
+        cd build
+        cmake .. \
+            -DCMAKE_PREFIX_PATH=$(realpath ../../../hip_installdir)
+            -DENABLE_HIP=ON \
+            -DCMAKE_HIP_ARCHITECTURES=gfx90a
+        make -j4 VERBOSE=ON

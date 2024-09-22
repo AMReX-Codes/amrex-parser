@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Tests:
-    name: GCC Tests
+  Tests-gmake:
+    name: GCC Tests & GNU Make
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -33,7 +33,7 @@ jobs:
         make -j4 USE_CPU=TRUE
         ./main.gnu.ex
 
-  Tutorials:
+  Tutorials-gmake:
     name: GCC libamrexpr & GNU Make
     runs-on: ubuntu-latest
     steps:
@@ -62,6 +62,7 @@ jobs:
         .github/workflows/dependencies/dependencies_gcc.sh
     - name: Tests
       run: |
+        cmake --version
         mkdir build
         cd build
         cmake .. -DCMAKE_CXX_COMPILER=g++ -DENABLE_TESTS=ON

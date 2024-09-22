@@ -26,7 +26,6 @@ option(ENABLE_HIP "Enable HIP support" OFF)
 if (ENABLE_HIP)
     set(AMREXPR_USE_GPU 1)
     set(AMREXPR_USE_HIP 1)
-    find_package(hip REQUIRED)
     enable_language(HIP)
 endif()
 
@@ -50,15 +49,18 @@ target_include_directories(amrexpr PUBLIC
                            $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
                            $<INSTALL_INTERFACE:include>)
 
+get_target_property(amrexpr_sources amrexpr SOURCES)
+list(FILTER amrexpr_sources INCLUDE REGEX "\\.cpp$")
+
 if (ENABLE_CUDA)
-    get_target_property(_sources amrexpr SOURCES)
-    list(FILTER _sources INCLUDE REGEX "\\.cpp$")
-    set_source_files_properties(${_sources} PROPERTIES LANGUAGE CUDA)
-    if (NOT DEFINED CUDA_ARCHITECTURES)
+    set_source_files_properties(${amrexpr_sources} PROPERTIES LANGUAGE CUDA)
+    if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
         message(STATUS "No CUDA architectures specified. Native will be used.")
-        set_target_properties(amrexpr PROPERTIES CUDA_ARCHITECTURES native)
+        set(CMAKE_CUDA_ARCHITECTURES native)
     endif()
-    set_target_properties(amrexpr PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    set_target_properties(amrexpr PROPERTIES
+                          CUDA_ARCHITECTURES ${CMAKE_CUDA_ARCHITECTURES}
+                          CUDA_SEPARABLE_COMPILATION ON)
     target_compile_features(amrexpr PUBLIC cuda_std_17)
     target_compile_options(amrexpr PUBLIC
                            $<$<COMPILE_LANGUAGE:CUDA>:-m64>
@@ -69,6 +71,12 @@ if (ENABLE_CUDA)
 endif()
 
 if (ENABLE_HIP)
+    set_source_files_properties(${amrexpr_sources} PROPERTIES LANGUAGE HIP)
+    if (NOT DEFINED CMAKE_HIP_ARCHITECTURES)
+        message(STATUS "No HIP architectures specified. 'gfx90a' will be used.")
+        set(CMAKE_HIP_ARCHITECTURES gfx90a)
+    endif()
+    set_target_properties(amrexpr PROPERTIES HIP_ARCHITECTURES ${CMAKE_HIP_ARCHITECTURES})
     target_compile_features(amrexpr PUBLIC hip_std_17)
 endif()
 
@@ -86,12 +94,6 @@ install(FILES ${CMAKE_BINARY_DIR}/amrexpr_Config.H DESTINATION include)
 set(amrexpr_FIND_DEPENDENCIES "")
 if (ENABLE_CUDA)
     set(amrexpr_FIND_DEPENDENCIES "${amrexpr_FIND_DEPENDENCIES}\nfind_dependency(CUDAToolkit REQUIRED)")
-endif()
-if (ENABLE_HIP)
-    set(amrexpr_FIND_DEPENDENCIES "${amrexpr_FIND_DEPENDENCIES}\nfind_dependency(hip REQUIRED)")
-endif()
-if (ENABLE_SYCL)
-    # Adjust SYCL dependency find commands if necessary
 endif()
 
 include(CMakePackageConfigHelpers)

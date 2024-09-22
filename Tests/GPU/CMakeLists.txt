@@ -16,4 +16,9 @@ if (ENABLE_CUDA)
     target_compile_options(test_gpu PRIVATE $<TARGET_PROPERTY:amrexpr>)
 endif()
 
+if (ENABLE_HIP)
+    set_source_files_properties(main.cpp PROPERTIES LANGUAGE HIP)
+    target_compile_options(test_gpu PRIVATE $<TARGET_PROPERTY:amrexpr>)
+endif()
+
 add_test(NAME test_gpu COMMAND test_gpu)

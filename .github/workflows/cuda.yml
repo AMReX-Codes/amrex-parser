@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Tests:
-    name: CUDA Tests
+  Tests-gmake:
+    name: CUDA Tests & GNU Make
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -27,3 +27,59 @@ jobs:
 
         cd Tests/GPU
         make -j4 USE_CUDA=TRUE CUDA_ARCH=80
+
+  Tests-cmake:
+    name: CUDA Tests & CMake
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_nvcc.sh
+    - name: Tests
+      run: |
+        export PATH=/usr/local/cuda/bin:${PATH}
+        export LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
+        which nvcc || echo "nvcc not in PATH!"
+
+        mkdir build
+        cd build
+        cmake .. \
+            -DCMAKE_INSTALL_PREFIX=../cuda_installdir \
+            -DENABLE_CUDA=ON \
+            -DCMAKE_CUDA_ARCHITECTURES=80 \
+            -DENABLE_TESTS=ON
+        make -j4 VERBOSE=ON
+        make install
+
+  Tutorials-cmake:
+    name: CUDA Tests & CMake
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_nvcc.sh
+    - name: Tests
+      run: |
+        export PATH=/usr/local/cuda/bin:${PATH}
+        export LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
+        which nvcc || echo "nvcc not in PATH!"
+
+        mkdir build
+        cd build
+        cmake .. \
+            -DCMAKE_INSTALL_PREFIX=../cuda_installdir \
+            -DENABLE_CUDA=ON \
+            -DCMAKE_CUDA_ARCHITECTURES=80
+        make -j4 VERBOSE=ON
+        make install
+
+        cd ../Tutorials/libamrexpr
+        mkdir build
+        cd build
+        cmake .. \
+            -DCMAKE_PREFIX_PATH=$(realpath ../../../cuda_installdir)
+            -DENABLE_CUDA=ON \
+            -DCMAKE_CUDA_ARCHITECTURES=80
+        make -j4 VERBOSE=ON
