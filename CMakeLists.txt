@@ -7,8 +7,6 @@ if (CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
     message(FATAL_ERROR "\nIn-source builds are not allowed.\n")
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
-
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_CONFIGURATION_TYPES "Release;Debug;MinSizeRel;RelWithDebInfo")
     set(CMAKE_BUILD_TYPE Release
@@ -22,7 +20,6 @@ if (ENABLE_CUDA)
     set(AMREXPR_USE_CUDA 1)
     find_package(CUDAToolkit REQUIRED)
     enable_language(CUDA)
-    set(CMAKE_CUDA_STANDARD 17)
 endif()
 
 option(ENABLE_HIP "Enable HIP support" OFF)
@@ -31,7 +28,6 @@ if (ENABLE_HIP)
     set(AMREXPR_USE_HIP 1)
     find_package(hip REQUIRED)
     enable_language(HIP)
-    set(CMAKE_HIP_STANDARD 17)
 endif()
 
 option(ENABLE_SYCL "Enable SYCL support" OFF)
@@ -43,6 +39,8 @@ endif()
 
 add_library(amrexpr)
 add_subdirectory(Src)
+
+target_compile_features(amrexpr PUBLIC cxx_std_17)
 
 configure_file(${PROJECT_SOURCE_DIR}/Tools/CMake/amrexpr_Config.H.in
                ${CMAKE_BINARY_DIR}/amrexpr_Config.H)
@@ -61,16 +59,21 @@ if (ENABLE_CUDA)
         set_target_properties(amrexpr PROPERTIES CUDA_ARCHITECTURES native)
     endif()
     set_target_properties(amrexpr PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-    target_compile_options(amrexpr PRIVATE
+    target_compile_features(amrexpr PUBLIC cuda_std_17)
+    target_compile_options(amrexpr PUBLIC
                            $<$<COMPILE_LANGUAGE:CUDA>:-m64>
                            $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
                            $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda>
                            $<$<COMPILE_LANGUAGE:CUDA>:--use_fast_math>)
-    target_link_libraries(amrexpr PRIVATE CUDA::cudart)
+    target_link_libraries(amrexpr PUBLIC CUDA::cudart)
+endif()
+
+if (ENABLE_HIP)
+    target_compile_features(amrexpr PUBLIC hip_std_17)
 endif()
 
 if (ENABLE_SYCL)
-    target_compile_options(amrexpr PRIVATE -fsycl)
+    target_compile_options(amrexpr PUBLIC -fsycl)
 endif()
 
 install(TARGETS amrexpr EXPORT amrexprTargets)
@@ -79,9 +82,6 @@ install(DIRECTORY ${PROJECT_SOURCE_DIR}/Src/ DESTINATION include
         FILES_MATCHING PATTERN "*.hpp" PATTERN "*.H")
 
 install(FILES ${CMAKE_BINARY_DIR}/amrexpr_Config.H DESTINATION include)
-
-set(PACKAGE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-set(PACKAGE_INCLUDE_INSTALL_DIR "include")
 
 set(amrexpr_FIND_DEPENDENCIES "")
 if (ENABLE_CUDA)
@@ -102,6 +102,9 @@ write_basic_package_version_file(
     COMPATIBILITY AnyNewerVersion
 )
 
+set(PACKAGE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(PACKAGE_INCLUDE_INSTALL_DIR "include")
+
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/Tools/CMake/amrexprConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/amrexprConfig.cmake"
@@ -121,10 +124,8 @@ install(EXPORT amrexprTargets
         DESTINATION lib/cmake/amrexpr
 )
 
-# tests
-# enable_testing
-# add_subdirectory(Tests)
-
-# cofig:
-# AMREXPR_USE_SYCL, HIP, CUDA, GPU
-# NDEBUG
+option(ENABLE_TESTS "Enable Tests" OFF)
+if (ENABLE_TESTS)
+    enable_testing()
+    add_subdirectory(Tests)
+endif()
