@@ -87,6 +87,7 @@ enum parser_f2_t {  // Built-in functions with two arguments
     PARSER_LEQ,
     PARSER_EQ,
     PARSER_NEQ,
+    PARSER_CMP_CHAIN,
     PARSER_AND,
     PARSER_OR,
     PARSER_HEAVISIDE,
@@ -113,6 +114,7 @@ std::string_view parser_f2_s[] =
     "leq",
     "eq",
     "neq",
+    "and",
     "and",
     "or",
     "heaviside",
@@ -247,6 +249,8 @@ struct parser_node* parser_newf3 (enum parser_f3_t ftype, struct parser_node* n1
                                   struct parser_node* n2, struct parser_node* n3);
 struct parser_node* parser_newassign (struct parser_symbol* s, struct parser_node* v);
 struct parser_node* parser_newlist (struct parser_node* nl, struct parser_node* nr);
+struct parser_node* parser_newcmpchain (struct parser_node* nl, enum parser_f2_t cmp,
+                                        struct parser_node* nr);
 
 /*******************************************************************/
 
@@ -470,6 +474,7 @@ parser_call_f2 (enum parser_f2_t type, double a, double b)
         return (a == b) ? 1.0 : 0.0;
     case PARSER_NEQ:
         return (a != b) ? 1.0 : 0.0;
+    case PARSER_CMP_CHAIN:
     case PARSER_AND:
         return ((a != 0.0) && (b != 0.0)) ? 1.0 : 0.0;
     case PARSER_OR:

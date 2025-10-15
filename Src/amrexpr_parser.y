@@ -61,11 +61,8 @@ int amrexpr_parserlex (void);
 %nonassoc NEG UPLUS
 %right POW
 
-/* This specifies the type of `exp` (i.e., struct parser_node*).  Rules
-   specified later pass `exp` to parser_new* functions declared in
-   amrexpr_Parser_Y.H.
-*/
-%type <n> exp
+/* This specifies the type of expressions */
+%type <n> exp stmt or_exp and_exp cmp_exp add_exp mul_exp pow_exp unary_exp primary_exp
 
 %start input
 
@@ -81,34 +78,76 @@ input:
   }
 ;
 
-/* Enum types PARSER_ADD, PARSER_SUB, etc. are defined in amrexpr_Parser_Y.H
- * Functions parser_new* are also declared in that file.
- */
+/* Top level - handles lists and assignments */
 exp:
+  stmt                       { $$ = $1; }
+| exp ';' stmt               { $$ = amrexpr::parser_newlist($1, $3); }
+| exp ';'                    { $$ = amrexpr::parser_newlist($1, nullptr); }
+;
+
+/* Statements - handles assignments and expressions */
+stmt:
+  or_exp                     { $$ = $1; }
+| SYMBOL '=' or_exp          { $$ = amrexpr::parser_newassign($1, $3); }
+
+/* OR expressions */
+or_exp:
+  and_exp                    { $$ = $1; }
+| or_exp OR and_exp          { $$ = amrexpr::parser_newf2(amrexpr::PARSER_OR, $1, $3); }
+;
+
+/* AND expressions */
+and_exp:
+  cmp_exp                    { $$ = $1; }
+| and_exp AND cmp_exp        { $$ = amrexpr::parser_newf2(amrexpr::PARSER_AND, $1, $3); }
+;
+
+/* Comparison expressions - handles all comparison operators and chaining */
+cmp_exp:
+  add_exp                    { $$ = $1; }
+| cmp_exp '<' add_exp        { $$ = amrexpr::parser_newcmpchain($1, amrexpr::PARSER_LT, $3); }
+| cmp_exp '>' add_exp        { $$ = amrexpr::parser_newcmpchain($1, amrexpr::PARSER_GT, $3); }
+| cmp_exp LEQ add_exp        { $$ = amrexpr::parser_newcmpchain($1, amrexpr::PARSER_LEQ,$3); }
+| cmp_exp GEQ add_exp        { $$ = amrexpr::parser_newcmpchain($1, amrexpr::PARSER_GEQ,$3); }
+| cmp_exp EQ add_exp         { $$ = amrexpr::parser_newcmpchain($1, amrexpr::PARSER_EQ ,$3); }
+| cmp_exp NEQ add_exp        { $$ = amrexpr::parser_newcmpchain($1, amrexpr::PARSER_NEQ,$3); }
+;
+
+/* Addition and subtraction */
+add_exp:
+  mul_exp                    { $$ = $1; }
+| add_exp '+' mul_exp        { $$ = amrexpr::parser_newnode(amrexpr::PARSER_ADD, $1, $3); }
+| add_exp '-' mul_exp        { $$ = amrexpr::parser_newnode(amrexpr::PARSER_SUB, $1, $3); }
+;
+
+/* Multiplication and division */
+mul_exp:
+  unary_exp                  { $$ = $1; }
+| mul_exp '*' unary_exp      { $$ = amrexpr::parser_newnode(amrexpr::PARSER_MUL, $1, $3); }
+| mul_exp '/' unary_exp      { $$ = amrexpr::parser_newnode(amrexpr::PARSER_DIV, $1, $3); }
+;
+
+/* Unary expressions */
+unary_exp:
+  pow_exp                    { $$ = $1; }
+| '-' unary_exp              { $$ = amrexpr::parser_newneg($2); }
+| '+' unary_exp              { $$ = $2; }
+;
+
+/* Power (right associative) */
+pow_exp:
+  primary_exp                { $$ = $1; }
+| primary_exp POW unary_exp  { $$ = amrexpr::parser_newf2(amrexpr::PARSER_POW, $1, $3); }
+;
+
+/* Primary expressions */
+primary_exp:
   NUMBER                     { $$ = amrexpr::parser_newnumber($1); }
 | SYMBOL                     { $$ = amrexpr::parser_newsymbol($1); }
-| exp '+' exp                { $$ = amrexpr::parser_newnode(amrexpr::PARSER_ADD, $1, $3); }
-| exp '-' exp                { $$ = amrexpr::parser_newnode(amrexpr::PARSER_SUB, $1, $3); }
-| exp '*' exp                { $$ = amrexpr::parser_newnode(amrexpr::PARSER_MUL, $1, $3); }
-| exp '/' exp                { $$ = amrexpr::parser_newnode(amrexpr::PARSER_DIV, $1, $3); }
-| '(' exp ')'                { $$ = $2; }
-| exp '<' exp                { $$ = amrexpr::parser_newf2(amrexpr::PARSER_LT, $1, $3); }
-| exp '>' exp                { $$ = amrexpr::parser_newf2(amrexpr::PARSER_GT, $1, $3); }
-| exp LEQ exp                { $$ = amrexpr::parser_newf2(amrexpr::PARSER_LEQ, $1, $3); }
-| exp GEQ exp                { $$ = amrexpr::parser_newf2(amrexpr::PARSER_GEQ, $1, $3); }
-| exp EQ exp                 { $$ = amrexpr::parser_newf2(amrexpr::PARSER_EQ, $1, $3); }
-| exp NEQ exp                { $$ = amrexpr::parser_newf2(amrexpr::PARSER_NEQ, $1, $3); }
-| exp AND exp                { $$ = amrexpr::parser_newf2(amrexpr::PARSER_AND, $1, $3); }
-| exp OR exp                 { $$ = amrexpr::parser_newf2(amrexpr::PARSER_OR, $1, $3); }
-| '-'exp %prec NEG           { $$ = amrexpr::parser_newneg($2); }
-| '+'exp %prec UPLUS         { $$ = $2; }
-| exp POW exp                { $$ = amrexpr::parser_newf2(amrexpr::PARSER_POW, $1, $3); }
-| F1 '(' exp ')'             { $$ = amrexpr::parser_newf1($1, $3); }
-| F2 '(' exp ',' exp ')'     { $$ = amrexpr::parser_newf2($1, $3, $5); }
-| F3 '(' exp ',' exp ',' exp ')' { $$ = amrexpr::parser_newf3($1, $3, $5, $7); }
-| SYMBOL '=' exp             { $$ = amrexpr::parser_newassign($1, $3); }
-| exp ';' exp                { $$ = amrexpr::parser_newlist($1, $3); }
-| exp ';'                    { $$ = amrexpr::parser_newlist($1, nullptr); }
+| '(' or_exp ')'                { $$ = $2; }
+| F1 '(' or_exp ')'             { $$ = amrexpr::parser_newf1($1, $3); }
+| F2 '(' or_exp ',' or_exp ')'     { $$ = amrexpr::parser_newf2($1, $3, $5); }
+| F3 '(' or_exp ',' or_exp ',' or_exp ')' { $$ = amrexpr::parser_newf3($1, $3, $5, $7); }
 ;
 
 %%

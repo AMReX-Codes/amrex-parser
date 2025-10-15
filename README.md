@@ -21,11 +21,11 @@ can be computed with `min` and `max`, respectively.  It supports the
 Heaviside step function, `heaviside(x1,x2)` that gives `0`, `x2`, `1`, for
 `x1 < 0`, `x1 = 0` and `x1 > 0`, respectively.  It supports the Bessel
 function of the first kind of order `n` `jn(n,x)`, and the Bessel function
-of the second kind of order ``n`` ``yn(n,x)``. Complete elliptic
-integrals of the first and second kind, `comp_ellint_1(k)` and
-`comp_ellint_2(k)`, are supported.  There is `if(a,b,c)` that gives `b` or
-`c` depending on the value of `a`.  A number of comparison operators are
-supported, including `<`, `>`, `==`, `!=`, `<=`, and `>=`.  The Boolean
+of the second kind of order ``n`` ``yn(n,x)``. Complete elliptic integrals
+of the first and second kind, `comp_ellint_1(k)` and `comp_ellint_2(k)`, are
+supported.  There is `if(a,b,c)` that gives `b` or `c` depending on the
+value of `a`.  A number of comparison operators are supported, including
+`<`, `>`, `==`, `!=`, `<=`, and `>=`, and they can be chained. The Boolean
 results from comparison can be combined by `and` and `or`, and they hold the
 value `1` for true and `0` for false.  The precedence of the operators
 follows the convention of the C and C++ programming languages.  Here is an
@@ -34,7 +34,7 @@ example of using the parser.
 ```c++
    #include "amrexpr.hpp"
 
-   Parser parser("if(x>a and x<b, sin(x)*cos(y)*if(z<0, 1.0, exp(-z)), .3*c**2)");
+   Parser parser("if(a<x<b, sin(x)*cos(y)*if(z<0, 1.0, exp(-z)), .3*c**2)");
    parser.setConstant(a, ...);
    parser.setConstant(b, ...);
    parser.setConstant(c, ...);
