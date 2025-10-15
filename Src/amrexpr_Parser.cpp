@@ -30,6 +30,8 @@ Parser::define (std::string const& func_body)
         try {
             amrexpr_parserparse();
         } catch (const std::runtime_error& e) {
+            amrexpr_parser_delete_buffer(buffer); // delete buffer allocated by bison
+            amrexpr_parser_delete_ptrs();         // delete ptrs allocated by amrexpr
             throw std::runtime_error(std::string(e.what()) + " in Parser expression \""
                                      + m_data->m_expression + "\"");
         }

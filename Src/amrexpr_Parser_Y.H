@@ -263,9 +263,9 @@ struct amrexpr_parser {
 
 struct amrexpr_parser* amrexpr_parser_new ();
 void amrexpr_parser_delete (struct amrexpr_parser* parser);
+void amrexpr_parser_delete_ptrs ();
 
-struct amrexpr_parser* parser_dup (struct amrexpr_parser* source);
-struct parser_node* parser_ast_dup (struct amrexpr_parser* parser, struct parser_node* node, int move);
+struct parser_node* parser_ast_dup (struct amrexpr_parser* parser, struct parser_node* node);
 
 void parser_regvar (struct amrexpr_parser* parser, char const* name, int i);
 void parser_setconst (struct amrexpr_parser* parser, char const* name, double c);
@@ -274,7 +274,7 @@ std::set<std::string> parser_get_symbols (struct amrexpr_parser* parser);
 int parser_depth (struct amrexpr_parser* parser);
 
 /* We need to walk the tree in these functions */
-void parser_ast_optimize (struct parser_node* node, std::map<std::string,double>& local_consts);
+void parser_ast_optimize (struct parser_node*& node, std::map<std::string,double>& local_consts);
 std::size_t parser_ast_size (struct parser_node* node);
 void parser_ast_print (struct parser_node* node, std::string const& space, std::ostream& printer);
 void parser_ast_regvar (struct parser_node* node, char const* name, int i);
@@ -288,6 +288,7 @@ void parser_ast_sort (struct parser_node* node);
 double parser_get_number (struct parser_node* node);
 void parser_set_number (struct parser_node* node, double v);
 bool parser_node_equal (struct parser_node* a, struct parser_node* b);
+bool parser_same_symbol (struct parser_node* a, struct parser_node* b);
 /*******************************************************************/
 
 template <typename T>
