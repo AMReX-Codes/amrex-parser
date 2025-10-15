@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <map>
 #include <set>
 #include <string>
 #include <string_view>
@@ -273,7 +274,7 @@ std::set<std::string> parser_get_symbols (struct amrexpr_parser* parser);
 int parser_depth (struct amrexpr_parser* parser);
 
 /* We need to walk the tree in these functions */
-void parser_ast_optimize (struct parser_node* node);
+void parser_ast_optimize (struct parser_node* node, std::map<std::string,double>& local_consts);
 std::size_t parser_ast_size (struct parser_node* node);
 void parser_ast_print (struct parser_node* node, std::string const& space, std::ostream& printer);
 void parser_ast_regvar (struct parser_node* node, char const* name, int i);
