@@ -15,7 +15,7 @@ jobs:
     name: Clang Tests & GNU Make
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Dependencies
       run: |
         .github/workflows/dependencies/dependencies_clang.sh
@@ -37,7 +37,7 @@ jobs:
     name: Clang libamrexpr & GNU Make
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Dependencies
       run: |
         .github/workflows/dependencies/dependencies_clang.sh
@@ -56,7 +56,7 @@ jobs:
     name: Clang Tests & CMake
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Dependencies
       run: |
         .github/workflows/dependencies/dependencies_clang.sh
@@ -72,7 +72,7 @@ jobs:
     name: Clang libamrexpr & CMake
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Dependencies
       run: |
         .github/workflows/dependencies/dependencies_clang.sh

@@ -15,7 +15,7 @@ jobs:
     name: GCC Tests & GNU Make
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Dependencies
       run: |
         .github/workflows/dependencies/dependencies_gcc.sh
@@ -37,7 +37,7 @@ jobs:
     name: GCC libamrexpr & GNU Make
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Dependencies
       run: |
         .github/workflows/dependencies/dependencies_gcc.sh
@@ -56,7 +56,7 @@ jobs:
     name: GCC Tests & CMake
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Dependencies
       run: |
         .github/workflows/dependencies/dependencies_gcc.sh
@@ -73,7 +73,7 @@ jobs:
     name: GCC libamrexpr & CMake
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Dependencies
       run: |
         .github/workflows/dependencies/dependencies_gcc.sh

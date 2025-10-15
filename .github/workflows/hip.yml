@@ -13,9 +13,9 @@ concurrency:
 jobs:
   Tests-gmake:
     name: HIP Tests & GNU Make
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Dependencies
       run: |
         .github/workflows/dependencies/dependencies_hip.sh
@@ -29,9 +29,9 @@ jobs:
 
   Tests-cmake:
     name: HIP Tests & CMake
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Dependencies
       run: |
         .github/workflows/dependencies/dependencies_hip.sh
@@ -53,9 +53,9 @@ jobs:
 
   Tutorials-cmake:
     name: HIP Tutorials & CMake
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Dependencies
       run: |
         .github/workflows/dependencies/dependencies_hip.sh
