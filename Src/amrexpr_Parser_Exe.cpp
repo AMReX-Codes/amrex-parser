@@ -35,6 +35,11 @@ parser_compile_exe_size (struct parser_node* node, char*& p, std::size_t& exe_si
     // In parser_exe_eval, we push to the stack for NUMBER, SYMBOL, VP, PP.
     // In parser_exe_eval, we pop the stack for ADD, SUB, MUL, DIV, F2, and IF.
 
+    // Note that for + and * the nodes have been sorted before this function
+    // is called. So we don't need to worry about cases like f(x) + x.
+
+    // Note that there is no PARSER_SUB. a-b is actually a+(-b).
+
     switch (node->type)
     {
     case PARSER_NUMBER:
@@ -473,6 +478,19 @@ parser_compile_exe_size (struct parser_node* node, char*& p, std::size_t& exe_si
                                       (((struct parser_f2*)node)->r)));
             }
             exe_size += sizeof(ParserExePOWI);
+        }
+        else if (((struct parser_f2*)node)->ftype == PARSER_POW &&
+                 ((struct parser_f2*)node)->r->type == PARSER_NUMBER &&
+                 parser_get_number(((struct parser_f2*)node)->r) == 0.5)
+        {
+            parser_compile_exe_size(((struct parser_f2*)node)->l, p, exe_size,
+                                    max_stack_size, stack_size, local_variables);
+            if (p) {
+                auto *t = new(p) ParserExeF1;
+                p      += sizeof(ParserExeF1);
+                t->ftype = PARSER_SQRT;
+            }
+            exe_size += sizeof(ParserExeF1);
         }
         else
         {
