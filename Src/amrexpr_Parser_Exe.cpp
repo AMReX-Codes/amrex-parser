@@ -137,7 +137,6 @@ parser_compile_exe_size (struct parser_node* node, char*& p, std::size_t& exe_si
             exe_size += sizeof(ParserExeSUB_PP);
             ++stack_size;
             max_stack_size = std::max(max_stack_size, stack_size);
-            break;
         }
         else if (node->l->type == PARSER_SYMBOL &&
                  node->r->type == PARSER_SYMBOL)
@@ -151,7 +150,6 @@ parser_compile_exe_size (struct parser_node* node, char*& p, std::size_t& exe_si
             exe_size += sizeof(ParserExeADD_PP);
             ++stack_size;
             max_stack_size = std::max(max_stack_size, stack_size);
-            break;
         }
         else if (node->l->type == PARSER_SYMBOL &&
                  node->r->type == PARSER_MUL &&
