@@ -406,7 +406,7 @@ AMREXPR_GPU_HOST_DEVICE AMREXPR_NO_INLINE
 T parser_math_yn (int a, T b)
 {
 #if defined AMREXPR_USE_SYCL || defined __MINGW32__
-    amrex::ignore_unused(a,b);
+    amrexpr::ignore_unused(a,b);
     // neither yn(f) nor std::cyl_bessel_y work yet
     // https://github.com/oneapi-src/oneAPI-spec/issues/308
     AMREXPR_ALWAYS_ASSERT_WITH_MESSAGE(false, "parser: yn in SYCL not supported yet");
