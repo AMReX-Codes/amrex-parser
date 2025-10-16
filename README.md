@@ -35,9 +35,9 @@ example of using the parser.
    #include "amrexpr.hpp"
 
    Parser parser("if(a<x<b, sin(x)*cos(y)*if(z<0, 1.0, exp(-z)), .3*c**2)");
-   parser.setConstant(a, ...);
-   parser.setConstant(b, ...);
-   parser.setConstant(c, ...);
+   parser.setConstant("a", ...);
+   parser.setConstant("b", ...);
+   parser.setConstant("c", ...);
    parser.registerVariables({"x","y","z"});
    auto f = parser.compile<3>();  // 3 because there are three variables.
 
