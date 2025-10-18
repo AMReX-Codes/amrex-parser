@@ -126,7 +126,9 @@ ParserExecutor<N>
 Parser::compileHost () const
 {
     if (m_data && m_data->m_parser) {
-        assert(N == m_data->m_nvars);
+        if (N != m_data->m_nvars) {
+            throw std::runtime_error("amrexpr: the number of varibles in compile() and registerVariables() do not match");
+        }
 
         if (!(m_data->m_host_executor)) {
             int stack_size;
@@ -135,12 +137,12 @@ Parser::compileHost () const
                                  stack_size));
 
             if (m_data->m_max_stack_size > AMREXPR_PARSER_STACK_SIZE) {
-                throw std::runtime_error("amrexpr::Parser: AMREXPR_PARSER_STACK_SIZE, "
+                throw std::runtime_error("amrexpr: AMREXPR_PARSER_STACK_SIZE, "
                              + std::to_string(AMREXPR_PARSER_STACK_SIZE) + ", is too small for "
                              + m_data->m_expression);
             }
             if (stack_size != 0) {
-                throw std::runtime_error("amrexpr::Parser: something went wrong with parser stack! "
+                throw std::runtime_error("amrexpr: something went wrong with parser stack! "
                              + std::to_string(stack_size));
             }
 

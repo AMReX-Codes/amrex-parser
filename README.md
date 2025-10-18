@@ -66,6 +66,56 @@ Note that an assignment to an automatic variable must be terminated with
 the constants set by `setConstant` and the variables registered by
 `registerVariables`.
 
+The parser's `operator()` does not throw exceptions because it's meant to be
+used on both CPUs and GPUs. However, you could catch run time errors such as
+syntax errors during the definition and compilation stages. For example,
+
+```c++
+    amrexpr::Parser parser2;
+    amrexpr::ParserExecutor<2> exe2;
+    try {
+        parser2.define("a*x + b*y + b^^3"); // this will cause a syntax error
+        parser2.setConstant("a", 4.0);
+        parser2.setConstant("b", 2.0);
+        parser.registerVariables({"x","y"});
+        exe2 = parser.compile<2>(); // 2: two variables
+    } catch (std::runtime_error const& e) {
+        std::cout << e.what() << "\n";
+    }
+    if (exe2) {
+        std::cout << "There was a syntax error in the expression. How did we come here?\n\n";
+    } else {
+        std::cout << "exe2 is null as expected\n\n";
+    }
+
+    amrexpr::Parser parser3;
+    amrexpr::ParserExecutor<2> exe3;
+    try {
+        parser3.define("a*x + b*y + z");
+        parser3.setConstant("a", 4.0);
+        parser3.setConstant("b", 2.0);
+        parser3.registerVariables({"x","y"}); // forgot about z
+        exe3 = parser3.compile<2>(); // 2: two variables
+    } catch (std::runtime_error const& e) {
+        std::cout << e.what() << "\n";
+    }
+    if (exe3) {
+        std::cout << "There was an unknown symbol in the expression. How did we come here?\n\n";
+    } else {
+        std::cout << "exe3 is null as expected\n\n";
+    }
+```
+
+This code block above will result in
+
+```console
+syntax error in Parser expression "a*x + b*y + b^^3"
+exe2 is null as expected
+
+Unknown variable z in Parser expression "a*x + b*y + z"
+exe3 is null as expected
+```
+
 ## Installation
 
 There two ways to install `amrexpr`. A simple example demonstrating the use
