@@ -8,7 +8,10 @@ is designed for high-performance computing applications that solve partial
 differential equations on block-structured adaptive meshes. This library is
 for users who wish to utilize the parser functionality without incorporating
 the full AMReX framework. It supports both CPU and GPU architectures,
-including Nvidia, AMD, and Intel GPUs. It requires C++17 or later.
+including Nvidia, AMD, and Intel GPUs. While the construction and
+initializaion of a `Parser` object are not thread-safe, the evaluation of
+parsed expressions is fully thread-safe. The library requires C++17 or
+later.
 
 ## Features
 
@@ -41,8 +44,10 @@ example of using the parser.
    parser.registerVariables({"x","y","z"});
    auto f = parser.compile<3>();  // 3 because there are three variables.
 
-   // f can be used in both host and device code.  It takes 3 arguments in
-   // this example.  The parser object must be alive for f to be valid.
+   // ParserExecutor<3> f is thread-safe, and can be used in both host and
+   // device code. It takes 3 arguments in this example. The parser object
+   // must be alive for f to be valid.
+
    for (int k = 0; ...) {
      for (int j = 0; ...) {
        for (int i = 0; ...) {
@@ -55,7 +60,7 @@ example of using the parser.
 Local automatic variables can be defined in the expression.  For example,
 
 ```c++
-   Parser parser("r2=x*x+y*y; r=sqrt(r2); cos(a+r2)*log(r)"
+   Parser parser("r2=x*x+y*y; r=sqrt(r2); cos(a+r2)*log(r)");
    parser.setConstant("a", ...);
    parser.registerVariables({"x","y"});
    auto f = parser.compile<2>();  // 2 because there are two variables.
