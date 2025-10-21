@@ -127,7 +127,7 @@ Parser::compileHost () const
 {
     if (m_data && m_data->m_parser) {
         if (N != m_data->m_nvars) {
-            throw std::runtime_error("amrexpr: the number of varibles in compile() and registerVariables() do not match");
+            throw std::runtime_error("amrexpr: the number of variables in compile() and registerVariables() do not match");
         }
 
         if (!(m_data->m_host_executor)) {
