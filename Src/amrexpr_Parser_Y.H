@@ -114,7 +114,7 @@ std::string_view parser_f2_s[] =
     "leq",
     "eq",
     "neq",
-    "and",
+    "cmp_chain",
     "and",
     "or",
     "heaviside",

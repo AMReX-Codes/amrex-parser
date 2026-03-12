@@ -23,6 +23,7 @@ amrexpr_parsererror (char const *s, ...)
 namespace amrexpr {
 
 namespace {
+    // Not thread safe. Concurrent Parser construction will corrupt these.
     struct parser_node* parser_root = nullptr;
     std::vector<void*>  parser_ptrs;
 }
@@ -302,7 +303,7 @@ parser_ast_size (struct parser_node* node)
             +             parser_ast_size(((struct parser_f3*)node)->n3);
         break;
     case PARSER_ASSIGN:
-        result += parser_aligned_size(sizeof(struct parser_node))
+        result = parser_aligned_size(sizeof(struct parser_node))
             + parser_ast_size((struct parser_node*)(((struct parser_assign*)node)->s))
             + parser_ast_size(((struct parser_assign*)node)->v);
         break;
