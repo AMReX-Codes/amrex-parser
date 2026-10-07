@@ -381,6 +381,14 @@ int main (int argc, char* argv[])
                         {0.}, {100.e-6}, 1000,
                         1.e-12, 1.e-15);
 
+        // f(x)*f(x) => square, and b + a*x => fma
+        nerror += test1("sin(x)*sin(x)", {}, {"x"},
+                        [=] (Real x) -> Real { return std::sin(x)*std::sin(x); },
+                        {-3.0}, {3.0}, 101, 1.e-12, 1.e-15);
+        nerror += test1("1.5 + 2.5*x", {}, {"x"},
+                        [=] (Real x) -> Real { return 1.5 + 2.5*x; },
+                        {-3.0}, {3.0}, 101, 1.e-12, 1.e-15);
+
         nerror += test3("epsilon/kp*2*x/w0**2*exp(-(x**2+y**2)/w0**2)*sin(k0*z)",
                         {{"epsilon",0.01},{"kp",3.5},{"w0",5.e-6},{"k0",3.e5}},
                         {"x","y","z"},
