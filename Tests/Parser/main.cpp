@@ -389,6 +389,23 @@ int main (int argc, char* argv[])
                         [=] (Real x) -> Real { return 1.5 + 2.5*x; },
                         {-3.0}, {3.0}, 101, 1.e-12, 1.e-15);
 
+        {   // setConstant and registerVariables are refused after compile().
+            std::cout << test_number++ << ". Testing setConstant/registerVariables after compile   ";
+            Parser parser("a*x");
+            parser.setConstant("a", 2.0);
+            parser.registerVariables({"x"});
+            auto exe = parser.compile<1>();
+            int ncaught = 0;
+            try { parser.setConstant("a", 3.0); } catch (std::runtime_error const&) { ++ncaught; }
+            try { parser.registerVariables({"x"}); } catch (std::runtime_error const&) { ++ncaught; }
+            if (ncaught == 2 && exe(1.5) == 3.0) {
+                std::cout << "    pass\n";
+            } else {
+                std::cout << "    failed\n";
+                ++nerror;
+            }
+        }
+
         nerror += test3("epsilon/kp*2*x/w0**2*exp(-(x**2+y**2)/w0**2)*sin(k0*z)",
                         {{"epsilon",0.01},{"kp",3.5},{"w0",5.e-6},{"k0",3.e5}},
                         {"x","y","z"},

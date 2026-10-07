@@ -141,6 +141,7 @@ public:
      * \brief Bind a named constant to \p c.
      * \param name Identifier referenced inside the expression.
      * \param c    Constant value substituted into the expression.
+     * \throws std::runtime_error if called after compile() or compileHost().
      */
     void setConstant (std::string const& name, double c);
 
@@ -150,6 +151,7 @@ public:
      * The ordering determines how arguments are passed to ParserExecutor::operator().
      *
      * \param vars Variable names supplied in parser argument order.
+     * \throws std::runtime_error if called after compile() or compileHost().
      */
     void registerVariables (std::vector<std::string> const& vars);
 
