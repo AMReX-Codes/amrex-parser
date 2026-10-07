@@ -9,6 +9,7 @@ target_sources(amrexpr
     amrexpr_IOFormat.H
     amrexpr_Math.H
     amrexpr_Parser_Exe.H
+    amrexpr_Parser_Exe_Body.H
     amrexpr_Parser.H
     amrexpr_parser.lex.h
     amrexpr_parser.lex.nolint.H
@@ -16,7 +17,6 @@ target_sources(amrexpr
     amrexpr_parser.tab.nolint.H
     amrexpr_Parser_Y.H
     amrexpr_REAL.H
-    amrexpr_Stack.H
     amrexpr_TypeTraits.H
     amrexpr_Utility.H
     amrexpr_Arena.cpp
