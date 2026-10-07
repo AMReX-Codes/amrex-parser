@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <thread>
 #include <vector>
 
 using namespace amrexpr;
@@ -146,6 +147,74 @@ int test4 (std::string const& f,
     }}}}
     if (nfail > 0) {
         std::cout << "    failed " << nfail << " times\n";
+        return 1;
+    } else {
+        std::cout << "    pass\n";
+        return 0;
+    }
+}
+
+int test_concurrent_parser_construction ()
+{
+    std::cout << test_number++ << ". Testing concurrent Parser construction   ";
+
+    constexpr int nthreads = 2;
+    constexpr int niters = 64;
+    std::vector<int> nfail(nthreads, 0);
+    std::vector<std::thread> threads;
+    threads.reserve(nthreads);
+
+    for (int tid = 0; tid < nthreads; ++tid) {
+        threads.emplace_back([tid, &nfail] ()
+        {
+            int local_nfail = 0;
+            for (int iter = 0; iter < niters; ++iter) {
+                try {
+                    {
+                        Parser parser("a*x + b");
+                        auto const a = static_cast<double>(tid+1);
+                        auto const b = 0.25*static_cast<double>(iter+1);
+                        auto const x = static_cast<double>((iter % 7) - 3);
+                        parser.setConstant("a", a);
+                        parser.setConstant("b", b);
+                        parser.registerVariables({"x"});
+                        auto const exe = parser.compileHost<1>();
+                        if (std::abs(exe(x) - (a*x + b)) > 1.e-12) {
+                            ++local_nfail;
+                        }
+                    }
+                    {
+                        Parser parser("if(x > threshold, x*x + c, c-x)");
+                        auto const threshold = static_cast<double>((tid % 3) - 1);
+                        auto const c = 0.125*static_cast<double>(iter+1);
+                        auto const x = static_cast<double>((iter % 5) - 2);
+                        parser.setConstant("threshold", threshold);
+                        parser.setConstant("c", c);
+                        parser.registerVariables({"x"});
+                        auto const exe = parser.compileHost<1>();
+                        auto const expected = (x > threshold) ? x*x + c : c - x;
+                        if (std::abs(exe(x) - expected) > 1.e-12) {
+                            ++local_nfail;
+                        }
+                    }
+                } catch (...) {
+                    ++local_nfail;
+                }
+            }
+            nfail[tid] = local_nfail;
+        });
+    }
+
+    int total_nfail = 0;
+    for (auto& thread : threads) {
+        thread.join();
+    }
+    for (auto n : nfail) {
+        total_nfail += n;
+    }
+
+    if (total_nfail > 0) {
+        std::cout << "    failed " << total_nfail << " times\n";
         return 1;
     } else {
         std::cout << "    pass\n";
@@ -449,6 +518,8 @@ int main (int argc, char* argv[])
                 ++nerror;
             }
         }
+
+        nerror += test_concurrent_parser_construction();
     }
 
     std::cout << "\nMax stack size is " << max_stack_size << "\n";

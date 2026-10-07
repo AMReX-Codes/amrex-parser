@@ -1,6 +1,7 @@
 add_executable(test_parser main.cpp)
 
-target_link_libraries(test_parser PRIVATE amrexpr)
+find_package(Threads REQUIRED)
+target_link_libraries(test_parser PRIVATE amrexpr Threads::Threads)
 
 target_include_directories(test_parser PRIVATE
     $<TARGET_PROPERTY:amrexpr,INTERFACE_INCLUDE_DIRECTORIES>

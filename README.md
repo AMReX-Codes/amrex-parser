@@ -8,10 +8,11 @@ is designed for high-performance computing applications that solve partial
 differential equations on block-structured adaptive meshes. This library is
 for users who wish to utilize the parser functionality without incorporating
 the full AMReX framework. It supports both CPU and GPU architectures,
-including Nvidia, AMD, and Intel GPUs. While the construction and
-initializaion of a `Parser` object are not thread-safe, the evaluation of
-parsed expressions is fully thread-safe. The library requires C++17 or
-later.
+including Nvidia, AMD, and Intel GPUs. Different `Parser` objects may be
+constructed concurrently from multiple threads, and the evaluation of
+compiled expressions is fully thread-safe. For parallel evaluation, prefer
+sharing one compiled executor across threads rather than constructing one
+`Parser` per thread. The library requires C++17 or later.
 
 ## Features
 

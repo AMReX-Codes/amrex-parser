@@ -23,16 +23,19 @@ amrexpr_parsererror (char const *s, ...)
 namespace amrexpr {
 
 namespace {
-    // Not thread safe. Concurrent Parser construction will corrupt these.
-    struct parser_node* parser_root = nullptr;
-    std::vector<void*>  parser_ptrs;
+    struct ParserWorkspace {
+        struct parser_node* root = nullptr;
+        std::vector<void*> ptrs;
+    };
+
+    thread_local ParserWorkspace parser_workspace;
 }
 
 // This is called by a bison rule to store the original AST in a static variable.
 void
 parser_defexpr (struct parser_node* body)
 {
-    parser_root = body;
+    parser_workspace.root = body;
 }
 
 struct parser_symbol*
@@ -40,11 +43,11 @@ parser_makesymbol (char* name)
 {
     // We allocate more than enough space so that late we can turn parser_symbol
     // into into parser_node if necessary.
-    parser_ptrs.push_back(std::malloc(sizeof(struct parser_node)));
-    auto *symbol = (struct parser_symbol*) parser_ptrs.back(); // NOLINT
+    parser_workspace.ptrs.push_back(std::malloc(sizeof(struct parser_node)));
+    auto *symbol = (struct parser_symbol*) parser_workspace.ptrs.back(); // NOLINT
     symbol->type = PARSER_SYMBOL;
     symbol->name = strdup(name);
-    parser_ptrs.push_back(symbol->name);
+    parser_workspace.ptrs.push_back(symbol->name);
     symbol->ip = -1;
     return symbol;
 }
@@ -52,8 +55,8 @@ parser_makesymbol (char* name)
 struct parser_node*
 parser_newnode (enum parser_node_t type, struct parser_node* l, struct parser_node* r)
 {
-    parser_ptrs.push_back(std::malloc(sizeof(struct parser_node)));
-    auto *tmp = (struct parser_node*) parser_ptrs.back();
+    parser_workspace.ptrs.push_back(std::malloc(sizeof(struct parser_node)));
+    auto *tmp = (struct parser_node*) parser_workspace.ptrs.back();
     if (type == PARSER_SUB) {
         tmp->type = PARSER_ADD;
         tmp->l = l;
@@ -69,8 +72,8 @@ parser_newnode (enum parser_node_t type, struct parser_node* l, struct parser_no
 struct parser_node*
 parser_newneg (struct parser_node* n)
 {
-    parser_ptrs.push_back(std::malloc(sizeof(struct parser_node)));
-    auto *tmp = (struct parser_node*) parser_ptrs.back();
+    parser_workspace.ptrs.push_back(std::malloc(sizeof(struct parser_node)));
+    auto *tmp = (struct parser_node*) parser_workspace.ptrs.back();
     tmp->type = PARSER_MUL;
     tmp->l = parser_newnumber(-1.0);
     tmp->r = n;
@@ -82,8 +85,8 @@ parser_newnumber (double d)
 {
     // We allocate more than enough space so that late we can turn parser_number
     // into into parser_node if necessary.
-    parser_ptrs.push_back(std::malloc(sizeof(struct parser_node)));
-    auto *r = (struct parser_number*) parser_ptrs.back(); // NOLINT
+    parser_workspace.ptrs.push_back(std::malloc(sizeof(struct parser_node)));
+    auto *r = (struct parser_number*) parser_workspace.ptrs.back(); // NOLINT
     r->type = PARSER_NUMBER;
     r->value = d;
     return (struct parser_node*) r;
@@ -98,8 +101,8 @@ parser_newsymbol (struct parser_symbol* symbol)
 struct parser_node*
 parser_newf1 (enum parser_f1_t ftype, struct parser_node* l)
 {
-    parser_ptrs.push_back(std::malloc(sizeof(struct parser_node)));
-    auto *tmp = (struct parser_f1*) parser_ptrs.back(); // NOLINT
+    parser_workspace.ptrs.push_back(std::malloc(sizeof(struct parser_node)));
+    auto *tmp = (struct parser_f1*) parser_workspace.ptrs.back(); // NOLINT
     tmp->type = PARSER_F1;
     tmp->l = l;
     tmp->ftype = ftype;
@@ -109,8 +112,8 @@ parser_newf1 (enum parser_f1_t ftype, struct parser_node* l)
 struct parser_node*
 parser_newf2 (enum parser_f2_t ftype, struct parser_node* l, struct parser_node* r)
 {
-    parser_ptrs.push_back(std::malloc(sizeof(struct parser_node)));
-    auto *tmp = (struct parser_f2*) parser_ptrs.back(); // NOLINT
+    parser_workspace.ptrs.push_back(std::malloc(sizeof(struct parser_node)));
+    auto *tmp = (struct parser_f2*) parser_workspace.ptrs.back(); // NOLINT
     tmp->type = PARSER_F2;
     tmp->l = l;
     tmp->r = r;
@@ -122,8 +125,8 @@ struct parser_node*
 parser_newf3 (enum parser_f3_t ftype, struct parser_node* n1, struct parser_node* n2,
               struct parser_node* n3)
 {
-    parser_ptrs.push_back(std::malloc(sizeof(struct parser_node)));
-    auto *tmp = (struct parser_f3*) parser_ptrs.back(); // NOLINT
+    parser_workspace.ptrs.push_back(std::malloc(sizeof(struct parser_node)));
+    auto *tmp = (struct parser_f3*) parser_workspace.ptrs.back(); // NOLINT
     tmp->type = PARSER_F3;
     tmp->n1 = n1;
     tmp->n2 = n2;
@@ -135,8 +138,8 @@ parser_newf3 (enum parser_f3_t ftype, struct parser_node* n1, struct parser_node
 struct parser_node*
 parser_newassign (struct parser_symbol* sym, struct parser_node* v)
 {
-    parser_ptrs.push_back(std::malloc(sizeof(struct parser_node)));
-    auto *r = (struct parser_assign*) parser_ptrs.back(); // NOLINT
+    parser_workspace.ptrs.push_back(std::malloc(sizeof(struct parser_node)));
+    auto *r = (struct parser_assign*) parser_workspace.ptrs.back(); // NOLINT
     r->type = PARSER_ASSIGN;
     r->s = sym;
     r->v = v;
@@ -149,8 +152,8 @@ parser_newlist (struct parser_node* nl, struct parser_node* nr)
     if (nr == nullptr) {
         return nl;
     } else {
-        parser_ptrs.push_back(std::malloc(sizeof(struct parser_node)));
-        auto *r = (struct parser_node*) parser_ptrs.back();
+        parser_workspace.ptrs.push_back(std::malloc(sizeof(struct parser_node)));
+        auto *r = (struct parser_node*) parser_workspace.ptrs.back();
         r->type = PARSER_LIST;
         r->l = nl;
         r->r = nr;
@@ -209,11 +212,11 @@ amrexpr_parser_new ()
 {
     auto *my_parser = (struct amrexpr_parser*) std::malloc(sizeof(struct amrexpr_parser));
 
-    my_parser->sz_mempool = parser_ast_size(parser_root);
+    my_parser->sz_mempool = parser_ast_size(parser_workspace.root);
     my_parser->p_root = std::malloc(my_parser->sz_mempool);
     my_parser->p_free = my_parser->p_root;
 
-    my_parser->ast = parser_ast_dup(my_parser, parser_root);
+    my_parser->ast = parser_ast_dup(my_parser, parser_workspace.root);
 
     amrexpr_parser_delete_ptrs();
 
@@ -246,10 +249,11 @@ amrexpr_parser_delete (struct amrexpr_parser* parser)
 void
 amrexpr_parser_delete_ptrs ()
 {
-    for (auto* p : parser_ptrs) {
+    for (auto* p : parser_workspace.ptrs) {
         std::free(p);
     }
-    parser_ptrs.clear();
+    parser_workspace.ptrs.clear();
+    parser_workspace.root = nullptr;
 }
 
 namespace {
