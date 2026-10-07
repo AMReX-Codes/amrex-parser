@@ -26,6 +26,13 @@ Parser::define (std::string const& func_body)
 
     if (!func_body.empty()) {
         m_data->m_expression = func_body;
+        // Strip // comments before joining lines, so a comment ends at its own line.
+        for (auto pos = m_data->m_expression.find("//"); pos != std::string::npos;
+             pos = m_data->m_expression.find("//", pos)) {
+            auto eol = m_data->m_expression.find('\n', pos);
+            m_data->m_expression.erase(pos, (eol == std::string::npos)
+                                       ? std::string::npos : eol - pos);
+        }
         m_data->m_expression.erase(
             std::remove_if(m_data->m_expression.begin(), m_data->m_expression.end(),
                            [](char c) { return c == '\n' || c == '\r'; }),

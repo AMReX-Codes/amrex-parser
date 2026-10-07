@@ -70,7 +70,8 @@ Local automatic variables can be defined in the expression.  For example,
 Note that an assignment to an automatic variable must be terminated with
 ``;``, and one should avoid name conflict between the local variables and
 the constants set by `setConstant` and the variables registered by
-`registerVariables`.
+`registerVariables`. An expression may span multiple lines, and text from
+`//` to the end of its line is a comment.
 
 The parser's `operator()` does not throw exceptions because it's meant to be
 used on both CPUs and GPUs. However, you could catch run time errors such as
