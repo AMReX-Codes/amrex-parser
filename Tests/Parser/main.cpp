@@ -389,6 +389,11 @@ int main (int argc, char* argv[])
                         [=] (Real x) -> Real { return 1.5 + 2.5*x; },
                         {-3.0}, {3.0}, 101, 1.e-12, 1.e-15);
 
+        // CR and LF are stripped.
+        nerror += test1("x\r\n + 1\r\n", {}, {"x"},
+                        [=] (Real x) -> Real { return x + 1.0; },
+                        {-3.0}, {3.0}, 7, 1.e-12, 1.e-15);
+
         {   // setConstant and registerVariables are refused after compile().
             std::cout << test_number++ << ". Testing setConstant/registerVariables after compile   ";
             Parser parser("a*x");
