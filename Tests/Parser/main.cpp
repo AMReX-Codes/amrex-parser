@@ -638,6 +638,46 @@ int main (int argc, char* argv[])
         nerror += test1("(x>0) and 1", {}, {"x"},
                         [=] (double x) -> double { return (x > 0.0) ? 1.0 : 0.0; },
                         {-2.0}, {2.0}, 5, 1.e-12, 1.e-15);
+
+        {   // Re-registering must forget the variables it drops, even when the
+            // syntax tree is shared with a copy of the Parser.
+            std::cout << test_number++ << ". Testing Parser re-registration\n";
+            int const nerror0 = nerror;
+            auto expect_unknown = [&] (Parser const& p) -> bool
+            {
+                try {
+                    Parser q = p; // NOLINT(performance-unnecessary-copy-initialization)
+                    auto exe = q.compile<1>();
+                    auto r = exe(2.0);
+                    amrexpr::ignore_unused(r);
+                    return false;
+                } catch (std::runtime_error const& e) {
+                    std::cout << "    Expected error: " << e.what() << '\n';
+                    return true;
+                }
+            };
+            {
+                Parser p("x+y");
+                p.registerVariables({"x","y"});
+                p.registerVariables({"y"});
+                if (!expect_unknown(p)) { ++nerror; }
+            }
+            {   // The copy registers, so the original's stale binding must go.
+                Parser p("x+y");
+                Parser q = p;
+                p.registerVariables({"x","y"});
+                q.registerVariables({"y"});
+                if (!expect_unknown(q)) { ++nerror; }
+            }
+            {   // Reordering is still allowed.
+                Parser p("x-y");
+                p.registerVariables({"x","y"});
+                p.registerVariables({"y","x"});
+                auto exe = p.compile<2>();
+                if (exe(3.0,10.0) != 7.0) { ++nerror; } // y=3, x=10
+            }
+            std::cout << ((nerror == nerror0) ? "    pass\n" : "    failed\n");
+        }
     }
 
     std::cout << "\nMax stack size is " << max_stack_size << "\n";

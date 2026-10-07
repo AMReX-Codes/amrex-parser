@@ -288,6 +288,7 @@ void amrexpr_parser_delete_ptrs ();
 struct parser_node* parser_ast_dup (struct amrexpr_parser* parser, struct parser_node* node);
 
 void parser_regvar (struct amrexpr_parser* parser, char const* name, int i);
+void parser_clearvar (struct amrexpr_parser* parser);
 void parser_setconst (struct amrexpr_parser* parser, char const* name, double c);
 void parser_print (struct amrexpr_parser* parser);
 std::set<std::string> parser_get_symbols (struct amrexpr_parser* parser);
