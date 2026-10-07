@@ -1,6 +1,11 @@
 #ifndef AMREXPR_PARSER_H_
 #define AMREXPR_PARSER_H_
 
+/**
+ * \file amrexpr_Parser.H
+ * \brief Runtime expression parser front-end and compiled executor helpers.
+ */
+
 #include "amrexpr_Arena.H"
 #include "amrexpr_Gpu.H"
 #include "amrexpr_Parser_Exe.H"
@@ -17,9 +22,26 @@
 
 namespace amrexpr {
 
+/**
+ * \struct amrexpr::ParserExecutor
+ * \brief Callable wrapper around a compiled parser expression with \p N variables.
+ *
+ * Instances are returned by Parser::compile() / Parser::compileHost() and may be
+ * invoked on host or device. Device execution is available only when AMREXPR_USE_GPU
+ * is enabled and a device executor buffer has been created.
+ *
+ * \tparam N Number of variables referenced in the expression.
+ */
 template <int N>
 struct ParserExecutor
 {
+    /**
+     * \brief Evaluate the expression with no arguments.
+     *
+     * Enabled only for constant expressions (\p N == 0).
+     *
+     * \return Expression value as double precision.
+     */
     template <int M=N, std::enable_if_t<M==0,int> = 0>
     [[nodiscard]] AMREXPR_GPU_HOST_DEVICE AMREXPR_FORCE_INLINE
     double operator() () const noexcept
@@ -28,6 +50,12 @@ struct ParserExecutor
         AMREXPR_IF_ON_HOST((return parser_exe_eval(m_host_executor, nullptr);))
     }
 
+    /**
+     * \brief Evaluate the expression with \p N double-compatible arguments.
+     *
+     * \param var Scalar arguments supplied in parser variable order.
+     * \return Expression value promoted to double precision.
+     */
     template <typename... Ts>
     [[nodiscard]] AMREXPR_GPU_HOST_DEVICE AMREXPR_FORCE_INLINE
     std::enable_if_t<sizeof...(Ts) == N && !amrexpr::Same<float,Ts...>::value, double>
@@ -38,6 +66,13 @@ struct ParserExecutor
         AMREXPR_IF_ON_HOST((return parser_exe_eval(m_host_executor, l_var);))
     }
 
+    /**
+     * \brief Evaluate the expression with \p N float arguments.
+     *
+     * Returns a float when all inputs are float.
+     *
+     * \param var Scalar arguments supplied in parser variable order.
+     */
     template <typename... Ts>
     [[nodiscard]] AMREXPR_GPU_HOST_DEVICE AMREXPR_FORCE_INLINE
     std::enable_if_t<sizeof...(Ts) == N &&  amrexpr::Same<float,Ts...>::value, float>
@@ -48,6 +83,11 @@ struct ParserExecutor
         AMREXPR_IF_ON_HOST((return static_cast<float>(parser_exe_eval(m_host_executor, l_var));))
     }
 
+    /**
+     * \brief Evaluate the expression using an explicit array of inputs.
+     * \param var Array storing the \p N variables in parser variable order.
+     * \return Expression value promoted to double precision.
+     */
     [[nodiscard]] AMREXPR_GPU_HOST_DEVICE AMREXPR_FORCE_INLINE
     double operator() (double var[N]) const noexcept
     {
@@ -55,45 +95,104 @@ struct ParserExecutor
         AMREXPR_IF_ON_HOST((return parser_exe_eval(m_host_executor, var);))
     }
 
+    /**
+     * \brief True when a compiled executor buffer is available.
+     */
     AMREXPR_GPU_HOST_DEVICE AMREXPR_FORCE_INLINE
     explicit operator bool () const {
         AMREXPR_IF_ON_DEVICE((return m_device_executor != nullptr;))
         AMREXPR_IF_ON_HOST((return m_host_executor != nullptr;))
     }
 
-    char* m_host_executor = nullptr;
+    char* m_host_executor = nullptr;  ///< Pointer to host-visible bytecode.
 #ifdef AMREXPR_USE_GPU
-    char* m_device_executor = nullptr;
+    char* m_device_executor = nullptr; ///< Pointer to device-visible bytecode (if copied).
 #endif
 };
 
+/**
+ * \brief Front-end for parsing scalar expressions into GPU/CPU executors.
+ *
+ * A Parser instance owns the expression string, parser state, and
+ * registered variables. After calling define() and registerVariables(),
+ * the expression can be compiled into a ParserExecutor that evaluates it
+ * efficiently on host or device.
+ */
 class Parser
 {
 public:
+    /**
+     * \brief Construct a parser by immediately parsing \p func_body.
+     * \param func_body Expression text; pass an empty string to defer parsing.
+     */
     Parser (std::string const& func_body);
+    //! Default-construct; call define() before compilation.
     Parser () = default;
+    /**
+     * \brief Parse and own a new expression, replacing any previously parsed one.
+     * \param func_body Expression text to parse.
+     */
     void define (std::string const& func_body);
 
+    //! True when an expression has been parsed successfully.
     explicit operator bool () const;
 
+    /**
+     * \brief Bind a named constant to \p c.
+     * \param name Identifier referenced inside the expression.
+     * \param c    Constant value substituted into the expression.
+     */
     void setConstant (std::string const& name, double c);
 
+    /**
+     * \brief Register the ordered list of variable names used by the expression.
+     *
+     * The ordering determines how arguments are passed to ParserExecutor::operator().
+     *
+     * \param vars Variable names supplied in parser argument order.
+     */
     void registerVariables (std::vector<std::string> const& vars);
 
+    //! Print a human-readable representation of the parser tree to stdout.
     void print () const;
+    //! Dump the compiled bytecode to stdout for debugging.
     void printExe () const;
 
+    /**
+     * \brief Return the maximum tree depth of the parsed expression.
+     * \return Depth measured in parse-tree levels (0 if undefined).
+     */
     [[nodiscard]] int depth () const;
+    /**
+     * \brief Return the maximum stack usage recorded during compilation.
+     * \return Stack depth in parser instructions (0 if undefined).
+     */
     [[nodiscard]] int maxStackSize () const;
 
+    /**
+     * \brief Return the sanitized expression string currently managed by the Parser.
+     * \return Copy of the parsed expression, or an empty string if undefined.
+     */
     [[nodiscard]] std::string expr () const;
 
+    /**
+     * \brief Return the set of symbols (variables and constants) referenced by the expression.
+     * \return Alphabetically sorted symbol names.
+     */
     [[nodiscard]] std::set<std::string> symbols () const;
 
-    //! This compiles for both GPU and CPU
+    /**
+     * \brief Compile the current expression into a host/device executor.
+     * \tparam N Number of registered variables.
+     * \return ParserExecutor callable on both host and GPU (if available).
+     */
     template <int N> [[nodiscard]] ParserExecutor<N> compile () const;
 
-    //! This compiles for CPU only
+    /**
+     * \brief Compile the current expression into a host-only executor.
+     * \tparam N Number of registered variables.
+     * \return ParserExecutor that executes only on the host.
+     */
     template <int N> [[nodiscard]] ParserExecutor<N> compileHost () const;
 
 private:

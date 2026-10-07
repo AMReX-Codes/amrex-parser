@@ -2,6 +2,11 @@
 #define AMREXPR_PARSER_Y_H_
 #include "amrexpr_Config.H"
 
+/**
+ * \file amrexpr_Parser_Y.H
+ * \brief Parser symbol-table definitions shared by the generated lexer/parser.
+ */
+
 #include "amrexpr_BLassert.H"
 #include "amrexpr_Gpu.H"
 #include "amrexpr_Math.H"

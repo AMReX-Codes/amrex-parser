@@ -2,6 +2,11 @@
 #define AMREXPR_PARSER_EXE_H_
 #include "amrexpr_Config.H"
 
+/**
+ * \file amrexpr_Parser_Exe.H
+ * \brief Bytecode instruction formats and helpers for the runtime parser.
+ */
+
 #include "amrexpr_BLassert.H"
 #include "amrexpr_Parser_Y.H"
 #include "amrexpr_Stack.H"
