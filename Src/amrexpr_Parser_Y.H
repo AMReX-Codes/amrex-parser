@@ -292,6 +292,9 @@ void parser_clearvar (struct amrexpr_parser* parser);
 void parser_setconst (struct amrexpr_parser* parser, char const* name, double c);
 void parser_print (struct amrexpr_parser* parser);
 std::set<std::string> parser_get_symbols (struct amrexpr_parser* parser);
+/* Functions in the expression that cannot be called in GPU device code in this
+ * build.  Empty unless the build is SYCL without the Intel math extension. */
+std::set<std::string> parser_get_device_unsupported_functions (struct amrexpr_parser* parser);
 int parser_depth (struct amrexpr_parser* parser);
 
 /* We need to walk the tree in these functions */
@@ -302,6 +305,8 @@ void parser_ast_regvar (struct parser_node* node, char const* name, int i);
 void parser_ast_setconst (struct parser_node* node, char const* name, double c);
 void parser_ast_get_symbols (struct parser_node* node, std::set<std::string>& symbols,
                              std::set<std::string>& local_symbols);
+void parser_ast_get_device_unsupported_functions (struct parser_node* node,
+                                                  std::set<std::string>& functions);
 int parser_ast_depth (struct parser_node* node);
 void parser_ast_sort (struct parser_node* node);
 
@@ -435,8 +440,8 @@ AMREXPR_GPU_DEVICE AMREXPR_FORCE_INLINE
 T parser_math_jn_device (int a, T b)
 {
 #if defined(AMREXPR_USE_SYCL) && !defined(AMREXPR_SYCL_EXT_INTEL_MATH)
+    // Unreachable: Parser::compile rejects jn for this build.
     amrexpr::ignore_unused(a,b);
-    AMREXPR_ALWAYS_ASSERT_WITH_MESSAGE(false, "parser: jn is not supported for SYCL without Intel extension.");
     return 0;
 #elif defined(AMREXPR_USE_SYCL)
     return sycl::ext::intel::math::jn(a, b);
@@ -474,8 +479,8 @@ AMREXPR_GPU_DEVICE AMREXPR_FORCE_INLINE
 T parser_math_yn_device (int a, T b)
 {
 #if defined(AMREXPR_USE_SYCL) && !defined(AMREXPR_SYCL_EXT_INTEL_MATH)
+    // Unreachable: Parser::compile rejects yn for this build.
     amrexpr::ignore_unused(a,b);
-    AMREXPR_ALWAYS_ASSERT_WITH_MESSAGE(false, "parser: yn is not supported for SYCL without Intel extension.");
     return 0;
 #elif defined(AMREXPR_USE_SYCL)
     return sycl::ext::intel::math::yn(a, b);

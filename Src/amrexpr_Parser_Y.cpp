@@ -1751,6 +1751,53 @@ void parser_ast_get_symbols (struct parser_node* node, std::set<std::string>& sy
     }
 }
 
+void parser_ast_get_device_unsupported_functions (struct parser_node* node,
+                                                  std::set<std::string>& functions)
+{
+#if !defined(AMREXPR_USE_SYCL)
+    // Only SYCL device code has unsupported functions.
+    amrexpr::ignore_unused(node, functions);
+#else
+    switch (node->type)
+    {
+    case PARSER_NUMBER:
+        break;
+    case PARSER_SYMBOL:
+        break;
+    case PARSER_ADD:
+    case PARSER_SUB:
+    case PARSER_MUL:
+    case PARSER_DIV:
+    case PARSER_LIST:
+        parser_ast_get_device_unsupported_functions(node->l, functions);
+        parser_ast_get_device_unsupported_functions(node->r, functions);
+        break;
+    case PARSER_F1:
+        parser_ast_get_device_unsupported_functions(((struct parser_f1*)node)->l, functions);
+        break;
+    case PARSER_F2:
+#if !defined(AMREXPR_SYCL_EXT_INTEL_MATH)
+        if (((struct parser_f2*)node)->ftype == PARSER_JN) { functions.insert("jn"); }
+        if (((struct parser_f2*)node)->ftype == PARSER_YN) { functions.insert("yn"); }
+#endif
+        parser_ast_get_device_unsupported_functions(((struct parser_f2*)node)->l, functions);
+        parser_ast_get_device_unsupported_functions(((struct parser_f2*)node)->r, functions);
+        break;
+    case PARSER_F3:
+        parser_ast_get_device_unsupported_functions(((struct parser_f3*)node)->n1, functions);
+        parser_ast_get_device_unsupported_functions(((struct parser_f3*)node)->n2, functions);
+        parser_ast_get_device_unsupported_functions(((struct parser_f3*)node)->n3, functions);
+        break;
+    case PARSER_ASSIGN:
+        parser_ast_get_device_unsupported_functions(((struct parser_assign*)node)->v, functions);
+        break;
+    default:
+        throw std::runtime_error("parser_ast_get_device_unsupported_functions: unknown node type "
+                                 + std::to_string(node->type));
+    }
+#endif
+}
+
 void
 parser_regvar (struct amrexpr_parser* parser, char const* name, int i)
 {
@@ -1793,6 +1840,14 @@ parser_get_symbols (struct amrexpr_parser* parser)
         symbols.erase(ls);
     }
     return symbols;
+}
+
+std::set<std::string>
+parser_get_device_unsupported_functions (struct amrexpr_parser* parser)
+{
+    std::set<std::string> functions;
+    parser_ast_get_device_unsupported_functions(parser->ast, functions);
+    return functions;
 }
 
 int

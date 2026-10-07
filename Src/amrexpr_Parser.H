@@ -194,6 +194,10 @@ public:
      * \brief Compile the current expression into a host/device executor.
      * \tparam N Number of registered variables.
      * \return ParserExecutor callable on both host and GPU (if available).
+     * \throws std::runtime_error if the expression uses a function that is
+     *         not available in device code for this build (jn and yn in
+     *         SYCL builds without the Intel math extension); use
+     *         compileHost() instead.
      */
     template <int N> [[nodiscard]] ParserExecutor<N> compile () const;
 
@@ -282,6 +286,16 @@ template <int N>
 ParserExecutor<N>
 Parser::compile () const
 {
+    if (m_data && m_data->m_parser) {
+        auto const unsupported = parser_get_device_unsupported_functions(m_data->m_parser);
+        if (!unsupported.empty()) {
+            std::string msg("amrexpr::Parser: these functions cannot be used in device code:");
+            for (auto const& f : unsupported) { msg.append(" ").append(f); }
+            throw std::runtime_error(msg + ". Use compileHost instead for "
+                                     + m_data->m_expression);
+        }
+    }
+
     auto exe = compileHost<N>();
 
 #ifdef AMREXPR_USE_GPU
