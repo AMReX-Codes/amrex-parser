@@ -34,9 +34,9 @@ value of `a`.  A number of comparison operators are supported, including
 `<`, `>`, `==`, `!=`, `<=`, and `>=`, and they can be chained. Parentheses
 stop chaining, so `(a < x) < b` compares the result of `a < x` with `b`.
 The Boolean results from comparison can be combined by `and` and `or`, and
-they hold the
-value `1` for true and `0` for false.  The precedence of the operators
-follows the convention of the C and C++ programming languages.  Here is an
+they hold the value `1` for true and `0` for false.  The precedence of the
+operators follows the convention of the C and C++ programming languages.
+Here is an
 example of using the parser.
 
 ```c++
@@ -88,8 +88,8 @@ syntax errors during the definition and compilation stages. For example,
         parser2.define("a*x + b*y + b^^3"); // this will cause a syntax error
         parser2.setConstant("a", 4.0);
         parser2.setConstant("b", 2.0);
-        parser.registerVariables({"x","y"});
-        exe2 = parser.compile<2>(); // 2: two variables
+        parser2.registerVariables({"x","y"});
+        exe2 = parser2.compile<2>(); // 2: two variables
     } catch (std::runtime_error const& e) {
         std::cout << e.what() << "\n";
     }
@@ -129,7 +129,7 @@ exe3 is null as expected
 
 ## Installation
 
-There two ways to install `amrexpr`. A simple example demonstrating the use
+There are two ways to install `amrexpr`. A simple example demonstrating the use
 of `libamrexpr` is available at `amrexpr/Tutorials/libamrexpr`.
 
 ### Option 1: Using GNU Make
