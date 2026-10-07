@@ -31,8 +31,10 @@ expressions using them; use `compileHost` instead. Complete elliptic integrals
 of the first and second kind, `comp_ellint_1(k)` and `comp_ellint_2(k)`, are
 supported.  There is `if(a,b,c)` that gives `b` or `c` depending on the
 value of `a`.  A number of comparison operators are supported, including
-`<`, `>`, `==`, `!=`, `<=`, and `>=`, and they can be chained. The Boolean
-results from comparison can be combined by `and` and `or`, and they hold the
+`<`, `>`, `==`, `!=`, `<=`, and `>=`, and they can be chained. Parentheses
+stop chaining, so `(a < x) < b` compares the result of `a < x` with `b`.
+The Boolean results from comparison can be combined by `and` and `or`, and
+they hold the
 value `1` for true and `0` for false.  The precedence of the operators
 follows the convention of the C and C++ programming languages.  Here is an
 example of using the parser.

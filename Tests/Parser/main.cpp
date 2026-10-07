@@ -658,6 +658,17 @@ int main (int argc, char* argv[])
                         [=] (double x) -> double { return (x > 0.0) ? 1.0 : 0.0; },
                         {-2.0}, {2.0}, 5, 1.e-12, 1.e-15);
 
+        // A parenthesized comparison must not be extended into a chain.
+        nerror += test1("(x<1)==0", {}, {"x"},
+                        [=] (double x) -> double { return ((x < 1.0) == 0) ? 1.0 : 0.0; },
+                        {-2.0}, {2.0}, 9, 1.e-12, 1.e-15);
+        nerror += test1("(x<1)<0.5", {}, {"x"},
+                        [=] (double x) -> double { return (double(x < 1.0) < 0.5) ? 1.0 : 0.0; },
+                        {-2.0}, {2.0}, 9, 1.e-12, 1.e-15);
+        nerror += test1("x<1<0.5", {}, {"x"},
+                        [=] (double x) -> double { return (x < 1.0 && 1.0 < 0.5) ? 1.0 : 0.0; },
+                        {-2.0}, {2.0}, 9, 1.e-12, 1.e-15);
+
         {   // Re-registering must forget the variables it drops, even when the
             // syntax tree is shared with a copy of the Parser.
             std::cout << test_number++ << ". Testing Parser re-registration\n";
