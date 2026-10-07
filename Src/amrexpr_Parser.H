@@ -141,7 +141,10 @@ public:
      * \brief Bind a named constant to \p c.
      * \param name Identifier referenced inside the expression.
      * \param c    Constant value substituted into the expression.
-     * \throws std::runtime_error if called after compile() or compileHost().
+     * \throws std::runtime_error if called after compile() or compileHost(),
+     *         or if the expression then reduces to nothing (e.g., only
+     *         assignments of constants). In the latter case the Parser
+     *         becomes undefined.
      */
     void setConstant (std::string const& name, double c);
 

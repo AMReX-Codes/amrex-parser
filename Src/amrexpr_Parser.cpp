@@ -30,13 +30,17 @@ Parser::define (std::string const& func_body)
         YY_BUFFER_STATE buffer = amrexpr_parser_scan_string(f.c_str());
         try {
             amrexpr_parserparse();
+            m_data->m_parser = amrexpr_parser_new();
         } catch (const std::runtime_error& e) {
             amrexpr_parser_delete_buffer(buffer); // delete buffer allocated by bison
             amrexpr_parser_delete_ptrs();         // delete ptrs allocated by amrexpr
             throw std::runtime_error(std::string(e.what()) + " in Parser expression \""
                                      + m_data->m_expression + "\"");
+        } catch (...) {
+            amrexpr_parser_delete_buffer(buffer);
+            amrexpr_parser_delete_ptrs();
+            throw;
         }
-        m_data->m_parser = amrexpr_parser_new();
         amrexpr_parser_delete_buffer(buffer);
     }
 }
@@ -63,7 +67,15 @@ Parser::setConstant (std::string const& name, double c)
         if (m_data->m_host_executor != nullptr) {
             throw std::runtime_error("amrexpr::Parser::setConstant: cannot modify constants after compile()");
         }
-        parser_setconst(m_data->m_parser, name.c_str(), c);
+        try {
+            parser_setconst(m_data->m_parser, name.c_str(), c);
+        } catch (...) {
+            // The syntax tree is gone. Leave the Parser undefined rather than
+            // holding a null tree.
+            amrexpr_parser_delete(m_data->m_parser);
+            m_data->m_parser = nullptr;
+            throw;
+        }
     }
 }
 

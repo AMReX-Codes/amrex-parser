@@ -420,6 +420,35 @@ int main (int argc, char* argv[])
                         },
                         {0.e-6, 0.0, -20.e-6}, {20.e-6, 1.e-10, 20.e-6}, 100,
                         1.e-12, 1.e-15);
+
+        {   // An expression that optimizes to nothing must be rejected.
+            std::cout << test_number++ << ". Testing \"a=1; b=2;\"   ";
+            try {
+                Parser parser("a=1; b=2;");
+                std::cout << "    failed: no exception\n";
+                ++nerror;
+            } catch (std::runtime_error const& e) {
+                std::cout << "    pass\n";
+            }
+        }
+
+        {   // The same via setConstant. The Parser must then be undefined,
+            // not left with an empty syntax tree.
+            std::cout << test_number++ << ". Testing \"a=c;\" with c set to a constant   ";
+            Parser parser("a=c;");
+            bool caught = false;
+            try {
+                parser.setConstant("c", 2.0);
+            } catch (std::runtime_error const& e) {
+                caught = true;
+            }
+            if (caught && !parser && parser.symbols().empty() && parser.depth() == 0) {
+                std::cout << "    pass\n";
+            } else {
+                std::cout << "    failed\n";
+                ++nerror;
+            }
+        }
     }
 
     std::cout << "\nMax stack size is " << max_stack_size << "\n";

@@ -217,13 +217,21 @@ amrexpr_parser_new ()
 
     amrexpr_parser_delete_ptrs();
 
-    if ((char*)my_parser->p_root + my_parser->sz_mempool != (char*)my_parser->p_free) {
-        throw std::runtime_error("amrexpr_parser_new: error in memory size");
-    }
+    try {
+        if ((char*)my_parser->p_root + my_parser->sz_mempool != (char*)my_parser->p_free) {
+            throw std::runtime_error("amrexpr_parser_new: error in memory size");
+        }
 
-    std::map<std::string,double> local_consts;
-    parser_ast_optimize(my_parser->ast, local_consts);
-    parser_ast_sort(my_parser->ast);
+        std::map<std::string,double> local_consts;
+        parser_ast_optimize(my_parser->ast, local_consts);
+        if (my_parser->ast == nullptr) {
+            throw std::runtime_error("amrexpr::Parser: expression optimizes to nothing");
+        }
+        parser_ast_sort(my_parser->ast);
+    } catch (...) {
+        amrexpr_parser_delete(my_parser);
+        throw;
+    }
 
     return my_parser;
 }
@@ -1709,6 +1717,9 @@ parser_setconst (struct amrexpr_parser* parser, char const* name, double c)
     parser_ast_setconst(parser->ast, name, c);
     std::map<std::string,double> local_consts;
     parser_ast_optimize(parser->ast, local_consts);
+    if (parser->ast == nullptr) {
+        throw std::runtime_error("amrexpr::Parser: expression optimizes to nothing");
+    }
     parser_ast_sort(parser->ast);
 }
 
