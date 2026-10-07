@@ -55,10 +55,19 @@ Parser::Data::~Data ()
 {
     m_expression.clear();
     if (m_parser) { amrexpr_parser_delete(m_parser); }
-    if (m_host_executor) { amrexpr::free_host(m_host_executor); }
+    clear_host_executor();
 #ifdef AMREXPR_USE_GPU
     if (m_device_executor) { amrexpr::free_device(m_device_executor); }
 #endif
+}
+
+void
+Parser::Data::clear_host_executor ()
+{
+    if (m_host_executor) {
+        amrexpr::free_host(m_host_executor);
+        m_host_executor = nullptr;
+    }
 }
 
 Parser::operator bool () const

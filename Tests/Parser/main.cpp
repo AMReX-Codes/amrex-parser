@@ -522,6 +522,35 @@ int main (int argc, char* argv[])
 
         nerror += test_concurrent_parser_construction();
 
+        {   // A failed compile must not leave a stale executor behind.
+            std::cout << test_number++ << ". Testing recovery after a failed compile   ";
+            Parser parser("x+y");
+            parser.registerVariables({"x"});
+            bool ok = false;
+            try {
+                auto exe = parser.compile<1>(); // y is unknown
+                amrexpr::ignore_unused(exe);
+            } catch (std::runtime_error const&) {
+                ok = true;
+            }
+            if (ok) {
+                try {
+                    parser.setConstant("y", 2.0); // must not be refused
+                    auto exe = parser.compile<1>();
+                    ok = (exe(3.0) == 5.0);
+                } catch (std::runtime_error const& e) {
+                    std::cout << "\n    " << e.what();
+                    ok = false;
+                }
+            }
+            if (ok) {
+                std::cout << "    pass\n";
+            } else {
+                std::cout << "    failed\n";
+                ++nerror;
+            }
+        }
+
 #if !(defined(AMREXPR_USE_SYCL) && !(defined(__INTEL_LLVM_COMPILER) || defined(__INTEL_CLANG_COMPILER)))
         for (int n : {-5, -2, -1, 0, 1, 2, 5}) {
             nerror += test1("jn(" + std::to_string(n) + ",x)", {}, {"x"},
