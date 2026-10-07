@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <string>
 #include <thread>
@@ -707,6 +708,32 @@ int main (int argc, char* argv[])
                 if (exe(3.0,10.0) != 7.0) { ++nerror; } // y=3, x=10
             }
             std::cout << ((nerror == nerror0) ? "    pass\n" : "    failed\n");
+        }
+
+        {   // Classification of NaN and infinity, which must also work under
+            // fast math.
+            std::cout << test_number++ << ". Testing isnan/isinf/isfinite   ";
+            auto const dnan = std::numeric_limits<double>::quiet_NaN();
+            auto const dinf = std::numeric_limits<double>::infinity();
+            auto const fnan = std::numeric_limits<float>::quiet_NaN();
+            auto const finf = std::numeric_limits<float>::infinity();
+            bool const ok =
+                   amrexpr::isnan(dnan) && !amrexpr::isnan(dinf) && !amrexpr::isnan(1.0)
+                && amrexpr::isinf(dinf) && amrexpr::isinf(-dinf) && !amrexpr::isinf(dnan)
+                && !amrexpr::isinf(std::numeric_limits<double>::max())
+                && amrexpr::isfinite(1.0) && amrexpr::isfinite(-0.0)
+                && amrexpr::isfinite(std::numeric_limits<double>::max())
+                && amrexpr::isfinite(std::numeric_limits<double>::denorm_min())
+                && !amrexpr::isfinite(dinf) && !amrexpr::isfinite(dnan)
+                && amrexpr::isnan(fnan) && !amrexpr::isnan(1.0f)
+                && amrexpr::isinf(finf) && amrexpr::isinf(-finf) && !amrexpr::isinf(fnan)
+                && amrexpr::isfinite(1.0f) && !amrexpr::isfinite(finf) && !amrexpr::isfinite(fnan);
+            if (ok) {
+                std::cout << "    pass\n";
+            } else {
+                std::cout << "    failed\n";
+                ++nerror;
+            }
         }
     }
 

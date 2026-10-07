@@ -5,7 +5,9 @@
 #include "amrexpr_Extension.H"
 #include "amrexpr_Gpu.H"
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <type_traits>
 #include <utility>
 
@@ -248,6 +250,128 @@ T comp_ellint_2 (T k)
     return Kcomp*sum_val;
 }
 
+// Under fast math (e.g., -ffast-math, -ffinite-math-only, /fp:fast, and Intel's
+// SYCL compiler by default), std::isnan etc. may always evaluate to false.  The
+// functions below work in all modes.  In fast-math modes, they test the bit
+// pattern, hidden from the optimizer so that it cannot fold the test away.
+
+// Clang: no macro tells if -fno-honor-nans or -fno-honor-infinities is on.
+// _WIN32: std::isnan is host only for nvcc with MSVC.
+#if (defined(__FINITE_MATH_ONLY__) && (__FINITE_MATH_ONLY__ == 1)) \
+    || defined(__FAST_MATH__) || defined(_M_FP_FAST) || defined(_WIN32) \
+    || defined(__clang__)
+#  define AMREXPR_MATH_ISNAN_BITS 1
+#endif
+
+namespace detail {
+    //! Return v, opaque to the optimizer under fast math.  Otherwise, clang
+    //! assumes that the result of a fast-math operation is not NaN or inf, and
+    //! folds a bit test of it to a constant.
+    template <typename U>
+    AMREXPR_GPU_HOST_DEVICE AMREXPR_FORCE_INLINE
+    U fp_opaque (U v) noexcept
+    {
+#if defined(AMREXPR_MATH_ISNAN_BITS) && (defined(__GNUC__) || defined(__clang__))
+#  if defined(__HIP_DEVICE_COMPILE__)
+        __asm__("" : "+v"(v));
+#  else
+        AMREXPR_IF_ON_HOST((__asm__("" : "+r"(v));))
+#  endif
+#endif
+        return v;
+    }
+
+    template <typename T>
+    using fp_uint_t = std::conditional_t<sizeof(T) == 8, std::uint64_t, std::uint32_t>;
+
+    //! Exponent bits of T, which are also the bits of +inf.
+    template <typename T>
+    AMREXPR_GPU_HOST_DEVICE AMREXPR_FORCE_INLINE
+    constexpr fp_uint_t<T> fp_exp_mask () noexcept
+    {
+        return (sizeof(T) == 8) ? fp_uint_t<T>(0x7ff0'0000'0000'0000ULL)
+                                : fp_uint_t<T>(0x7f80'0000U);
+    }
+
+    //! |x| as bits: NaN if > fp_exp_mask(), inf if ==, finite if <.
+    template <typename T>
+    AMREXPR_GPU_HOST_DEVICE AMREXPR_FORCE_INLINE
+    fp_uint_t<T> fp_abs_bits (T x) noexcept
+    {
+        using U = fp_uint_t<T>;
+        U bits;
+        std::memcpy(&bits, &x, sizeof(U));
+        bits = fp_opaque(bits);
+        return bits & (~U(0) >> 1);
+    }
+
+    template <typename T>
+    constexpr bool is_float_or_double = std::is_same_v<T,float> || std::is_same_v<T,double>;
+}
+
+//! Return true if x is NaN.  Works under fast math.
+template <typename T>
+[[nodiscard]] AMREXPR_GPU_HOST_DEVICE AMREXPR_FORCE_INLINE
+bool isnan (T x) noexcept
+{
+#if defined(AMREXPR_USE_SYCL)
+    if constexpr (detail::is_float_or_double<T>) {
+        return sycl::isnan(x);
+    } else
+#elif defined(AMREXPR_MATH_ISNAN_BITS)
+    if constexpr (detail::is_float_or_double<T>) {
+        return detail::fp_abs_bits(x) > detail::fp_exp_mask<T>();
+    } else
+#endif
+    {
+        return std::isnan(x);
+    }
+}
+
+//! Return true if x is +/-infinity.  Works under fast math.
+template <typename T>
+[[nodiscard]] AMREXPR_GPU_HOST_DEVICE AMREXPR_FORCE_INLINE
+bool isinf (T x) noexcept
+{
+#if defined(AMREXPR_USE_SYCL)
+    if constexpr (detail::is_float_or_double<T>) {
+        return sycl::isinf(x);
+    } else
+#elif defined(AMREXPR_MATH_ISNAN_BITS)
+    if constexpr (detail::is_float_or_double<T>) {
+        return detail::fp_abs_bits(x) == detail::fp_exp_mask<T>();
+    } else
+#endif
+    {
+        return std::isinf(x);
+    }
+}
+
+//! Return true if x is neither NaN nor infinity.  Works under fast math.
+template <typename T>
+[[nodiscard]] AMREXPR_GPU_HOST_DEVICE AMREXPR_FORCE_INLINE
+bool isfinite (T x) noexcept
+{
+#if defined(AMREXPR_USE_SYCL)
+    if constexpr (detail::is_float_or_double<T>) {
+        return sycl::isfinite(x);
+    } else
+#elif defined(AMREXPR_MATH_ISNAN_BITS)
+    if constexpr (detail::is_float_or_double<T>) {
+        return detail::fp_abs_bits(x) < detail::fp_exp_mask<T>();
+    } else
+#endif
+    {
+        return std::isfinite(x);
+    }
+}
+
+}
+
+namespace amrexpr {
+    using Math::isnan;
+    using Math::isinf;
+    using Math::isfinite;
 }
 
 #endif
